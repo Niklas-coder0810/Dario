@@ -10,9 +10,17 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    #MainMenu {
+        visibility: hidden;
+    }
+
+    footer {
+        visibility: hidden;
+    }
+
+    header {
+        visibility: hidden;
+    }
 
     .block-container {
         padding: 0 !important;
@@ -29,27 +37,41 @@ st.markdown("""
 game = r"""
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
+
 <meta charset="UTF-8">
 
 <style>
+
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+html,
 body {
+    width: 100%;
+    height: 100%;
     overflow: hidden;
     background: #080b20;
     font-family: Arial, sans-serif;
 }
 
+body {
+    overflow: hidden;
+}
+
 #game {
+
     position: relative;
+
     width: 100vw;
     height: 100vh;
+
     overflow: hidden;
+
     background:
         linear-gradient(
             180deg,
@@ -61,136 +83,278 @@ body {
 }
 
 canvas {
+
     width: 100%;
     height: 100%;
+
     display: block;
+
     outline: none;
 }
 
 #ui {
+
     position: absolute;
+
     top: 20px;
     left: 20px;
     right: 20px;
+
     display: flex;
+
     justify-content: space-between;
+
     color: white;
+
     font-size: 20px;
+
     font-weight: bold;
-    text-shadow: 0 3px 5px #000;
+
+    text-shadow:
+        0 3px 5px #000;
+
     pointer-events: none;
-    z-index: 3;
+
+    z-index: 10;
 }
 
 #title {
+
     position: absolute;
+
     top: 18px;
     left: 50%;
-    transform: translateX(-50%);
-    color: #fff;
-    font-size: 22px;
-    font-weight: bold;
-    text-shadow: 0 3px 10px #000;
-    pointer-events: none;
-    z-index: 3;
-}
 
-#message {
-    position: absolute;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    background: rgba(0, 0, 25, 0.65);
+    transform:
+        translateX(-50%);
+
     color: white;
-    text-align: center;
-    z-index: 5;
-}
 
-#message h1 {
-    font-size: 60px;
-    margin-bottom: 15px;
-    text-shadow: 0 5px 20px #000;
-}
-
-#message p {
     font-size: 22px;
-    margin-bottom: 25px;
-}
 
-button {
-    border: none;
-    padding: 14px 30px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #ffcc33, #ff7b00);
-    color: #251000;
-    font-size: 20px;
     font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 5px 20px rgba(0,0,0,.4);
-}
 
-button:hover {
-    transform: scale(1.05);
+    text-shadow:
+        0 3px 10px #000;
+
+    pointer-events: none;
+
+    z-index: 10;
 }
 
 #controls {
+
     position: absolute;
+
     bottom: 20px;
     left: 20px;
+
     color: white;
-    opacity: .8;
+
+    opacity: 0.8;
+
     font-size: 14px;
-    text-shadow: 0 2px 4px black;
+
+    text-shadow:
+        0 2px 4px black;
+
     pointer-events: none;
-    z-index: 3;
+
+    z-index: 10;
+}
+
+#distance {
+
+    position: absolute;
+
+    bottom: 20px;
+    right: 20px;
+
+    color: white;
+
+    opacity: 0.85;
+
+    font-size: 14px;
+
+    text-shadow:
+        0 2px 4px black;
+
+    pointer-events: none;
+
+    z-index: 10;
 }
 
 #focusMessage {
+
     position: absolute;
-    bottom: 20px;
-    right: 20px;
+
+    bottom: 60px;
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
     color: white;
-    font-size: 14px;
-    background: rgba(0,0,0,.35);
-    padding: 8px 12px;
-    border-radius: 8px;
-    text-shadow: 0 2px 4px black;
-    pointer-events: none;
-    z-index: 3;
-    transition: opacity .4s;
+
+    background:
+        rgba(0,0,0,.45);
+
+    padding:
+        10px 16px;
+
+    border-radius:
+        10px;
+
+    font-size:
+        14px;
+
+    text-shadow:
+        0 2px 4px black;
+
+    pointer-events:
+        none;
+
+    z-index:
+        20;
+
+    transition:
+        opacity .5s;
 }
+
+#message {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-direction: column;
+
+    background:
+        rgba(0, 0, 25, 0.70);
+
+    color: white;
+
+    text-align: center;
+
+    z-index: 50;
+}
+
+#message h1 {
+
+    font-size:
+        60px;
+
+    margin-bottom:
+        15px;
+
+    text-shadow:
+        0 5px 20px #000;
+}
+
+#message p {
+
+    font-size:
+        22px;
+
+    margin-bottom:
+        25px;
+}
+
+button {
+
+    border: none;
+
+    padding:
+        14px 30px;
+
+    border-radius:
+        12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffcc33,
+            #ff7b00
+        );
+
+    color:
+        #251000;
+
+    font-size:
+        20px;
+
+    font-weight:
+        bold;
+
+    cursor:
+        pointer;
+
+    box-shadow:
+        0 5px 20px
+        rgba(0,0,0,.4);
+}
+
+button:hover {
+
+    transform:
+        scale(1.05);
+}
+
 </style>
+
 </head>
+
 
 <body>
 
 <div id="game">
 
-    <canvas id="canvas" tabindex="0"></canvas>
+    <canvas
+        id="canvas"
+        tabindex="0">
+    </canvas>
+
 
     <div id="title">
         🌙 PIXEL ADVENTURE
     </div>
 
+
     <div id="ui">
+
         <div id="stats">
             ❤️ ❤️ ❤️ &nbsp;&nbsp; 🪙 0
         </div>
 
         <div id="level">
-            LEVEL 1
+            ENDLESS WORLD
         </div>
+
     </div>
 
+
     <div id="controls">
-        WASD / Pfeiltasten = Bewegen &nbsp; | &nbsp; W / ↑ / Leertaste = Springen
+        WASD / Pfeiltasten = Bewegen
+        &nbsp; | &nbsp;
+        W / ↑ / Leertaste = Springen
     </div>
+
+
+    <div id="distance">
+        📏 0 m
+    </div>
+
 
     <div id="focusMessage">
         🎮 Klicke ins Spiel und los geht's!
     </div>
+
 
     <div id="message">
 
@@ -213,24 +377,39 @@ button:hover {
 
 <script>
 
+
 /* =========================================================
    CANVAS
 ========================================================= */
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const canvas =
+    document.getElementById("canvas");
 
-let W;
-let H;
+const ctx =
+    canvas.getContext("2d");
+
+
+let W = 0;
+let H = 0;
+
 
 function resize() {
 
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    W =
+        canvas.width =
+        window.innerWidth;
+
+    H =
+        canvas.height =
+        window.innerHeight;
 
 }
 
-window.addEventListener("resize", resize);
+
+window.addEventListener(
+    "resize",
+    resize
+);
 
 resize();
 
@@ -249,11 +428,22 @@ let lives = 3;
 
 let gameOver = false;
 
-let won = false;
-
 let lastTime = 0;
 
-const worldWidth = 5000;
+let worldGeneratedUntil = 0;
+
+let highestPlatform = 0;
+
+let distanceTravelled = 0;
+
+
+/*
+    Die Welt wird immer weiter erzeugt.
+
+    Dadurch gibt es kein festes Ende.
+*/
+
+const generationDistance = 2500;
 
 
 /* =========================================================
@@ -291,25 +481,6 @@ const player = {
    INPUT
 ========================================================= */
 
-/*
-    WICHTIG:
-
-    Streamlit läuft das Spiel in einem iframe.
-    Deshalb bekommt das Canvas hier selbst den Tastatur-Fokus.
-
-    Unterstützt werden:
-
-    A
-    D
-    W
-    Pfeil links
-    Pfeil rechts
-    Pfeil oben
-    Pfeil unten
-    Leertaste
-*/
-
-
 const movementKeys = [
 
     "a",
@@ -326,347 +497,646 @@ const movementKeys = [
 ];
 
 
-/*
-    Wenn der Benutzer irgendwo auf das Spiel klickt,
-    bekommt das Canvas den Fokus.
-*/
+canvas.addEventListener(
+    "click",
+    function() {
 
-canvas.addEventListener("click", function() {
+        canvas.focus();
 
-    canvas.focus();
-
-    const focusMessage =
-        document.getElementById("focusMessage");
-
-    focusMessage.style.opacity = "0";
-
-});
-
-
-/*
-    Wenn das Canvas fokussiert wird.
-*/
-
-canvas.addEventListener("focus", function() {
-
-    const focusMessage =
-        document.getElementById("focusMessage");
-
-    focusMessage.style.opacity = "0";
-
-});
-
-
-/*
-    KEYDOWN
-
-    Wir hören direkt auf dem Canvas.
-*/
-
-canvas.addEventListener("keydown", function(e) {
-
-    const key = e.key.toLowerCase();
-
-    if (movementKeys.includes(key)) {
-
-        keys[key] = true;
-
-        e.preventDefault();
+        document
+            .getElementById(
+                "focusMessage"
+            )
+            .style.opacity = "0";
 
     }
+);
 
-});
+
+canvas.addEventListener(
+    "focus",
+    function() {
+
+        document
+            .getElementById(
+                "focusMessage"
+            )
+            .style.opacity = "0";
+
+    }
+);
+
+
+canvas.addEventListener(
+    "keydown",
+    function(e) {
+
+        const key =
+            e.key.toLowerCase();
+
+        if (
+            movementKeys.includes(key)
+        ) {
+
+            keys[key] = true;
+
+            e.preventDefault();
+
+        }
+
+    }
+);
+
+
+canvas.addEventListener(
+    "keyup",
+    function(e) {
+
+        const key =
+            e.key.toLowerCase();
+
+        if (
+            movementKeys.includes(key)
+        ) {
+
+            keys[key] = false;
+
+            e.preventDefault();
+
+        }
+
+    }
+);
 
 
 /*
-    KEYUP
+    Globale Events als zusätzliche
+    Absicherung für Streamlit.
 */
 
-canvas.addEventListener("keyup", function(e) {
+window.addEventListener(
+    "keydown",
+    function(e) {
 
-    const key = e.key.toLowerCase();
+        const key =
+            e.key.toLowerCase();
 
-    if (movementKeys.includes(key)) {
+        if (
+            movementKeys.includes(key)
+        ) {
 
-        keys[key] = false;
+            keys[key] = true;
 
-        e.preventDefault();
+            e.preventDefault();
 
-    }
-
-});
-
-
-/*
-    Zusätzlich globale Tastatur-Events.
-
-    Dadurch funktioniert die Steuerung auch dann,
-    wenn der Browser den Fokus kurz anders behandelt.
-*/
-
-window.addEventListener("keydown", function(e) {
-
-    const key = e.key.toLowerCase();
-
-    if (movementKeys.includes(key)) {
-
-        keys[key] = true;
-
-        e.preventDefault();
+        }
 
     }
+);
 
-});
 
+window.addEventListener(
+    "keyup",
+    function(e) {
 
-window.addEventListener("keyup", function(e) {
+        const key =
+            e.key.toLowerCase();
 
-    const key = e.key.toLowerCase();
+        if (
+            movementKeys.includes(key)
+        ) {
 
-    if (movementKeys.includes(key)) {
+            keys[key] = false;
 
-        keys[key] = false;
+            e.preventDefault();
 
-        e.preventDefault();
+        }
 
     }
+);
 
-});
 
+setTimeout(
+    function() {
 
-/*
-    Canvas direkt beim Start fokussieren.
-*/
+        canvas.focus();
 
-setTimeout(function() {
-
-    canvas.focus();
-
-}, 300);
+    },
+    500
+);
 
 
 /* =========================================================
-   LEVEL
+   WORLD ARRAYS
 ========================================================= */
 
-const platforms = [
+const platforms = [];
 
-    {
-        x: 0,
-        y: 500,
-        w: 800,
-        h: 100
-    },
+const coins = [];
 
-    {
-        x: 900,
-        y: 450,
-        w: 450,
-        h: 150
-    },
-
-    {
-        x: 1450,
-        y: 520,
-        w: 600,
-        h: 80
-    },
-
-    {
-        x: 2150,
-        y: 430,
-        w: 500,
-        h: 170
-    },
-
-    {
-        x: 2750,
-        y: 500,
-        w: 650,
-        h: 100
-    },
-
-    {
-        x: 3500,
-        y: 420,
-        w: 500,
-        h: 180
-    },
-
-    {
-        x: 4150,
-        y: 500,
-        w: 850,
-        h: 100
-    }
-
-];
+const enemies = [];
 
 
 /* =========================================================
-   COINS
+   RANDOM HELPER
 ========================================================= */
 
-const coins = [
+function random(min, max) {
 
-    {
-        x: 300,
-        y: 430,
-        collected: false
-    },
+    return (
+        Math.random() *
+        (max - min) +
+        min
+    );
 
-    {
-        x: 600,
-        y: 390,
-        collected: false
-    },
+}
 
-    {
-        x: 1000,
-        y: 380,
-        collected: false
-    },
 
-    {
-        x: 1200,
-        y: 330,
-        collected: false
-    },
+function randomInt(min, max) {
 
-    {
-        x: 1600,
-        y: 450,
-        collected: false
-    },
+    return Math.floor(
+        random(min, max + 1)
+    );
 
-    {
-        x: 1850,
-        y: 450,
-        collected: false
-    },
-
-    {
-        x: 2300,
-        y: 360,
-        collected: false
-    },
-
-    {
-        x: 2500,
-        y: 320,
-        collected: false
-    },
-
-    {
-        x: 2950,
-        y: 430,
-        collected: false
-    },
-
-    {
-        x: 3250,
-        y: 430,
-        collected: false
-    },
-
-    {
-        x: 3650,
-        y: 350,
-        collected: false
-    },
-
-    {
-        x: 3900,
-        y: 350,
-        collected: false
-    },
-
-    {
-        x: 4350,
-        y: 430,
-        collected: false
-    },
-
-    {
-        x: 4650,
-        y: 430,
-        collected: false
-    }
-
-];
+}
 
 
 /* =========================================================
-   ENEMIES
+   ADD PLATFORM
 ========================================================= */
 
-const enemies = [
+function addPlatform(
+    x,
+    y,
+    w,
+    h,
+    floating = false
+) {
 
-    {
-        x: 550,
-        y: 450,
-        w: 40,
-        h: 40,
-        vx: 1.5,
-        min: 450,
-        max: 750
-    },
+    platforms.push({
 
-    {
-        x: 1100,
-        y: 400,
-        w: 40,
-        h: 40,
-        vx: 1.8,
-        min: 920,
-        max: 1300
-    },
+        x: x,
 
-    {
-        x: 1750,
-        y: 470,
-        w: 40,
-        h: 40,
-        vx: 1.5,
-        min: 1500,
-        max: 2000
-    },
+        y: y,
 
-    {
-        x: 2350,
-        y: 380,
-        w: 40,
-        h: 40,
-        vx: 2,
-        min: 2180,
-        max: 2600
-    },
+        w: w,
 
-    {
-        x: 3100,
-        y: 450,
-        w: 40,
-        h: 40,
-        vx: 1.7,
-        min: 2800,
-        max: 3350
-    },
+        h: h,
 
-    {
-        x: 3700,
-        y: 370,
-        w: 40,
-        h: 40,
-        vx: 2,
-        min: 3550,
-        max: 3950
-    }
+        floating: floating
 
-];
+    });
+
+}
 
 
 /* =========================================================
-   BACKGROUND
+   ADD COIN
+========================================================= */
+
+function addCoin(
+    x,
+    y
+) {
+
+    coins.push({
+
+        x: x,
+
+        y: y,
+
+        collected: false
+
+    });
+
+}
+
+
+/* =========================================================
+   ADD ENEMY
+========================================================= */
+
+function addEnemy(
+    x,
+    y,
+    min,
+    max
+) {
+
+    enemies.push({
+
+        x: x,
+
+        y: y,
+
+        w: 40,
+
+        h: 40,
+
+        vx:
+            random(1.2, 2.1),
+
+        min: min,
+
+        max: max,
+
+        active: true
+
+    });
+
+}
+
+
+/* =========================================================
+   INITIAL WORLD
+========================================================= */
+
+
+/*
+    Startplattform
+*/
+
+addPlatform(
+    0,
+    500,
+    1000,
+    100,
+    false
+);
+
+
+/*
+    Einfache Münzen nahe am Boden.
+*/
+
+addCoin(
+    260,
+    455
+);
+
+addCoin(
+    380,
+    455
+);
+
+addCoin(
+    520,
+    455
+);
+
+addCoin(
+    670,
+    455
+);
+
+addCoin(
+    820,
+    455
+);
+
+
+/*
+    Erste Gegner.
+*/
+
+addEnemy(
+    600,
+    460,
+    450,
+    900
+);
+
+
+/*
+    Erzeuge direkt die ersten
+    Abschnitte.
+*/
+
+worldGeneratedUntil = 1000;
+
+
+/* =========================================================
+   GENERATE ENDLESS WORLD
+========================================================= */
+
+function generateWorld() {
+
+    while (
+        worldGeneratedUntil <
+        player.x + generationDistance
+    ) {
+
+        const startX =
+            worldGeneratedUntil;
+
+
+        /*
+            Normale Bodenplattform.
+        */
+
+        const groundWidth =
+            randomInt(
+                500,
+                850
+            );
+
+
+        /*
+            Höhe des Bodens
+            variiert leicht.
+        */
+
+        const groundY =
+            randomInt(
+                480,
+                530
+            );
+
+
+        addPlatform(
+            startX,
+            groundY,
+            groundWidth,
+            100,
+            false
+        );
+
+
+        /*
+            Mehrere leicht erreichbare
+            Münzen.
+
+            Sie befinden sich nur
+            wenige Pixel über dem Boden.
+        */
+
+        const coinCount =
+            randomInt(
+                4,
+                7
+            );
+
+
+        for (
+            let i = 0;
+            i < coinCount;
+            i++
+        ) {
+
+            const coinX =
+                startX +
+                80 +
+                i *
+                (
+                    groundWidth /
+                    (coinCount + 1)
+                );
+
+
+            addCoin(
+                coinX,
+                groundY - 35
+            );
+
+        }
+
+
+        /*
+            Gegner nur manchmal.
+        */
+
+        if (
+            Math.random() < 0.75
+        ) {
+
+            const enemyX =
+                startX +
+                random(
+                    180,
+                    groundWidth - 100
+                );
+
+
+            addEnemy(
+                enemyX,
+                groundY - 40,
+                startX + 80,
+                startX + groundWidth - 80
+            );
+
+        }
+
+
+        /*
+            =================================================
+            SCHWEBENDE PLATTFORM
+            =================================================
+
+            Ein Teil der Welt bekommt
+            eine Plattform in der Luft.
+        */
+
+        if (
+            Math.random() < 0.72
+        ) {
+
+            const floatingX =
+                startX +
+                random(
+                    100,
+                    Math.max(
+                        150,
+                        groundWidth - 250
+                    )
+                );
+
+
+            const floatingY =
+                randomInt(
+                    270,
+                    390
+                );
+
+
+            const floatingWidth =
+                randomInt(
+                    180,
+                    320
+                );
+
+
+            addPlatform(
+                floatingX,
+                floatingY,
+                floatingWidth,
+                28,
+                true
+            );
+
+
+            /*
+                Münzen auf der
+                schwebenden Plattform.
+
+                Dadurch muss der Spieler
+                wirklich hochspringen.
+            */
+
+            const floatingCoins =
+                randomInt(
+                    2,
+                    4
+                );
+
+
+            for (
+                let i = 0;
+                i < floatingCoins;
+                i++
+            ) {
+
+                const coinX =
+                    floatingX +
+                    45 +
+                    i *
+                    (
+                        (
+                            floatingWidth - 90
+                        ) /
+                        Math.max(
+                            1,
+                            floatingCoins - 1
+                        )
+                    );
+
+
+                addCoin(
+                    coinX,
+                    floatingY - 32
+                );
+
+            }
+
+
+            /*
+                Manchmal noch eine
+                zweite, höhere Plattform.
+            */
+
+            if (
+                Math.random() < 0.35
+            ) {
+
+                const upperX =
+                    floatingX +
+                    random(
+                        -60,
+                        floatingWidth - 80
+                    );
+
+
+                const upperY =
+                    Math.max(
+                        170,
+                        floatingY - random(
+                            100,
+                            150
+                        )
+                    );
+
+
+                const upperWidth =
+                    randomInt(
+                        150,
+                        240
+                    );
+
+
+                addPlatform(
+                    upperX,
+                    upperY,
+                    upperWidth,
+                    26,
+                    true
+                );
+
+
+                /*
+                    Münzen auch hier.
+                */
+
+                addCoin(
+                    upperX +
+                    upperWidth / 2,
+                    upperY - 32
+                );
+
+            }
+
+        }
+
+
+        /*
+            Gelegentlich eine
+            Münz-Reihe in der Luft.
+        */
+
+        if (
+            Math.random() < 0.45
+        ) {
+
+            const airStartX =
+                startX +
+                random(
+                    100,
+                    groundWidth - 150
+                );
+
+
+            const airY =
+                randomInt(
+                    300,
+                    400
+                );
+
+
+            for (
+                let i = 0;
+                i < 4;
+                i++
+            ) {
+
+                addCoin(
+                    airStartX +
+                    i * 45,
+                    airY -
+                    Math.sin(i * 0.8) * 25
+                );
+
+            }
+
+        }
+
+
+        /*
+            Nächster Abschnitt.
+        */
+
+        worldGeneratedUntil =
+            startX +
+            groundWidth +
+            randomInt(
+                80,
+                180
+            );
+
+    }
+
+}
+
+
+/* =========================================================
+   DRAW SKY
 ========================================================= */
 
 function drawSky() {
@@ -679,14 +1149,20 @@ function drawSky() {
             H
         );
 
+
     gradient.addColorStop(
         0,
         "#070b2f"
     );
 
     gradient.addColorStop(
-        .45,
+        0.40,
         "#18215f"
+    );
+
+    gradient.addColorStop(
+        0.72,
+        "#385f9b"
     );
 
     gradient.addColorStop(
@@ -694,7 +1170,10 @@ function drawSky() {
         "#65b6c7"
     );
 
-    ctx.fillStyle = gradient;
+
+    ctx.fillStyle =
+        gradient;
+
 
     ctx.fillRect(
         0,
@@ -704,7 +1183,9 @@ function drawSky() {
     );
 
 
-    /* Mond */
+    /*
+        Mond
+    */
 
     ctx.beginPath();
 
@@ -716,39 +1197,63 @@ function drawSky() {
         Math.PI * 2
     );
 
+
     ctx.fillStyle =
         "#fff3b0";
 
-    ctx.shadowBlur = 35;
+
+    ctx.shadowBlur =
+        35;
+
 
     ctx.shadowColor =
         "#fff3b0";
 
+
     ctx.fill();
 
-    ctx.shadowBlur = 0;
+
+    ctx.shadowBlur =
+        0;
 
 
-    /* Sterne */
+    /*
+        Sterne.
+    */
 
     for (
         let i = 0;
-        i < 80;
+        i < 100;
         i++
     ) {
 
         const x =
-            (i * 157) % W;
+            (
+                i * 157
+                -
+                cameraX * 0.03
+            ) % W;
+
 
         const y =
-            (i * 71) %
-            (H * .55);
+            (
+                i * 71
+            ) %
+            (H * 0.55);
+
+
+        const positiveX =
+            x < 0
+                ? x + W
+                : x;
+
 
         ctx.fillStyle =
             "rgba(255,255,255,.8)";
 
+
         ctx.fillRect(
-            x,
+            positiveX,
             y,
             2,
             2
@@ -769,48 +1274,77 @@ function drawMountains(
     height
 ) {
 
-    ctx.fillStyle = color;
+    ctx.fillStyle =
+        color;
+
 
     ctx.beginPath();
+
 
     ctx.moveTo(
         0,
         H
     );
 
+
+    const mountainWidth =
+        180;
+
+
+    const start =
+        -mountainWidth;
+
+
     for (
-        let x = -100;
-        x <= W + 200;
-        x += 180
+        let i = 0;
+        i < 30;
+        i++
     ) {
 
-        const px =
-            x -
-            (cameraX * offset) % 180;
+        const worldX =
+            start +
+            i *
+            mountainWidth;
+
+
+        const screenX =
+            worldX -
+            cameraX *
+            offset;
+
 
         ctx.lineTo(
-            px,
+            screenX,
             H - height
         );
 
-        ctx.lineTo(
-            px + 90,
-            H - height - 130
-        );
 
         ctx.lineTo(
-            px + 180,
+            screenX +
+            mountainWidth / 2,
+            H -
+            height -
+            130
+        );
+
+
+        ctx.lineTo(
+            screenX +
+            mountainWidth,
             H - height
         );
 
     }
+
 
     ctx.lineTo(
         W,
         H
     );
 
+
     ctx.closePath();
+
 
     ctx.fill();
 
@@ -825,76 +1359,92 @@ function drawBackground() {
 
     drawSky();
 
+
     drawMountains(
-        .08,
+        0.08,
         "#11173d",
         220
     );
 
+
     drawMountains(
-        .16,
+        0.16,
         "#172550",
         170
     );
 
+
     drawMountains(
-        .25,
+        0.25,
         "#213c63",
         130
     );
 
 
-    /* Nebel */
+    /*
+        Nebel
+    */
 
     const fog =
         ctx.createLinearGradient(
             0,
-            H * .55,
+            H * 0.55,
             0,
             H
         );
+
 
     fog.addColorStop(
         0,
         "rgba(255,255,255,0)"
     );
 
+
     fog.addColorStop(
         1,
         "rgba(190,240,240,.25)"
     );
 
-    ctx.fillStyle = fog;
+
+    ctx.fillStyle =
+        fog;
+
 
     ctx.fillRect(
         0,
-        H * .5,
+        H * 0.5,
         W,
-        H * .5
+        H * 0.5
     );
 
 }
 
 
 /* =========================================================
-   PLAYER DRAW
+   PLAYER
 ========================================================= */
 
 function drawPlayer() {
 
     const x =
-        player.x - cameraX;
+        player.x -
+        cameraX;
+
 
     const y =
         player.y;
 
 
-    /* Schatten */
+    /*
+        Schatten
+    */
 
     ctx.fillStyle =
         "rgba(0,0,0,.3)";
 
+
     ctx.beginPath();
+
 
     ctx.ellipse(
         x + 19,
@@ -906,13 +1456,17 @@ function drawPlayer() {
         Math.PI * 2
     );
 
+
     ctx.fill();
 
 
-    /* Körper */
+    /*
+        Körper
+    */
 
     ctx.fillStyle =
         player.color;
+
 
     ctx.fillRect(
         x + 4,
@@ -922,10 +1476,13 @@ function drawPlayer() {
     );
 
 
-    /* Kopf */
+    /*
+        Kopf
+    */
 
     ctx.fillStyle =
         "#ffd1b3";
+
 
     ctx.fillRect(
         x + 7,
@@ -935,10 +1492,13 @@ function drawPlayer() {
     );
 
 
-    /* Haare */
+    /*
+        Haare
+    */
 
     ctx.fillStyle =
         "#351c46";
+
 
     ctx.fillRect(
         x + 5,
@@ -948,10 +1508,13 @@ function drawPlayer() {
     );
 
 
-    /* Augen */
+    /*
+        Augen
+    */
 
     ctx.fillStyle =
         "#111";
+
 
     ctx.fillRect(
         x + 13,
@@ -959,6 +1522,7 @@ function drawPlayer() {
         3,
         4
     );
+
 
     ctx.fillRect(
         x + 23,
@@ -968,10 +1532,13 @@ function drawPlayer() {
     );
 
 
-    /* Beine */
+    /*
+        Beine
+    */
 
     ctx.fillStyle =
         "#292b63";
+
 
     ctx.fillRect(
         x + 6,
@@ -979,6 +1546,7 @@ function drawPlayer() {
         10,
         10
     );
+
 
     ctx.fillRect(
         x + 23,
@@ -996,10 +1564,13 @@ function drawPlayer() {
 
 function drawPlatforms() {
 
-    for (const p of platforms) {
+    for (
+        const p of platforms
+    ) {
 
         const x =
-            p.x - cameraX;
+            p.x -
+            cameraX;
 
 
         if (
@@ -1012,62 +1583,163 @@ function drawPlatforms() {
         }
 
 
-        /* Erde */
+        /*
+            Schwebende Plattform
+        */
 
-        ctx.fillStyle =
-            "#49352a";
-
-        ctx.fillRect(
-            x,
-            p.y,
-            p.w,
-            p.h
-        );
-
-
-        /* Gras */
-
-        ctx.fillStyle =
-            "#43b047";
-
-        ctx.fillRect(
-            x,
-            p.y,
-            p.w,
-            14
-        );
-
-
-        /* helles Gras */
-
-        ctx.fillStyle =
-            "#75d66c";
-
-        ctx.fillRect(
-            x,
-            p.y,
-            p.w,
-            5
-        );
-
-
-        /* Steine */
-
-        ctx.fillStyle =
-            "#70503b";
-
-        for (
-            let i = 20;
-            i < p.w;
-            i += 80
+        if (
+            p.floating
         ) {
 
+            /*
+                Glow
+            */
+
+            ctx.shadowBlur =
+                12;
+
+            ctx.shadowColor =
+                "rgba(100,220,255,.6)";
+
+
+            /*
+                Unterseite
+            */
+
+            ctx.fillStyle =
+                "#334a70";
+
+
             ctx.fillRect(
-                x + i,
-                p.y + 40,
-                12,
+                x,
+                p.y,
+                p.w,
+                p.h
+            );
+
+
+            /*
+                Blaue Kante
+            */
+
+            ctx.fillStyle =
+                "#5ed6e8";
+
+
+            ctx.fillRect(
+                x,
+                p.y,
+                p.w,
+                6
+            );
+
+
+            ctx.shadowBlur =
+                0;
+
+
+            /*
+                kleine Wolken-Partikel
+            */
+
+            ctx.fillStyle =
+                "rgba(210,250,255,.25)";
+
+
+            ctx.fillRect(
+                x + 20,
+                p.y + p.h,
+                30,
                 8
             );
+
+
+            ctx.fillRect(
+                x + p.w - 70,
+                p.y + p.h,
+                40,
+                7
+            );
+
+        }
+
+
+        /*
+            normale Bodenplattform
+        */
+
+        else {
+
+            /*
+                Erde
+            */
+
+            ctx.fillStyle =
+                "#49352a";
+
+
+            ctx.fillRect(
+                x,
+                p.y,
+                p.w,
+                p.h
+            );
+
+
+            /*
+                Gras
+            */
+
+            ctx.fillStyle =
+                "#43b047";
+
+
+            ctx.fillRect(
+                x,
+                p.y,
+                p.w,
+                14
+            );
+
+
+            /*
+                helles Gras
+            */
+
+            ctx.fillStyle =
+                "#75d66c";
+
+
+            ctx.fillRect(
+                x,
+                p.y,
+                p.w,
+                5
+            );
+
+
+            /*
+                Steine
+            */
+
+            ctx.fillStyle =
+                "#70503b";
+
+
+            for (
+                let i = 20;
+                i < p.w;
+                i += 80
+            ) {
+
+                ctx.fillRect(
+                    x + i,
+                    p.y + 40,
+                    12,
+                    8
+                );
+
+            }
 
         }
 
@@ -1082,9 +1754,13 @@ function drawPlatforms() {
 
 function drawCoins(time) {
 
-    for (const c of coins) {
+    for (
+        const c of coins
+    ) {
 
-        if (c.collected) {
+        if (
+            c.collected
+        ) {
 
             continue;
 
@@ -1092,7 +1768,8 @@ function drawCoins(time) {
 
 
         const x =
-            c.x - cameraX;
+            c.x -
+            cameraX;
 
 
         if (
@@ -1105,44 +1782,81 @@ function drawCoins(time) {
         }
 
 
+        /*
+            Kleine Animation.
+        */
+
         const bob =
             Math.sin(
-                time / 200 + c.x
+                time / 200 +
+                c.x
             ) * 5;
 
 
-        ctx.beginPath();
+        /*
+            Glow
+        */
 
-        ctx.arc(
-            x,
-            c.y + bob,
-            12,
-            0,
-            Math.PI * 2
-        );
+        ctx.shadowBlur =
+            15;
 
-        ctx.fillStyle =
-            "#ffd43b";
-
-        ctx.shadowBlur = 15;
 
         ctx.shadowColor =
             "#ffd43b";
 
+
+        ctx.beginPath();
+
+
+        ctx.arc(
+            x,
+            c.y + bob,
+            13,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            "#ffd43b";
+
+
         ctx.fill();
 
-        ctx.shadowBlur = 0;
 
+        ctx.shadowBlur =
+            0;
+
+
+        /*
+            Glanz
+        */
 
         ctx.fillStyle =
             "#fff1a3";
 
+
         ctx.fillRect(
-            x - 3,
+            x - 4,
             c.y - 7 + bob,
-            3,
-            10
+            4,
+            11
         );
+
+
+        /*
+            kleiner Rand
+        */
+
+        ctx.strokeStyle =
+            "#e8a900";
+
+
+        ctx.lineWidth =
+            2;
+
+
+        ctx.stroke();
 
     }
 
@@ -1155,16 +1869,57 @@ function drawCoins(time) {
 
 function drawEnemies() {
 
-    for (const e of enemies) {
+    for (
+        const e of enemies
+    ) {
+
+        if (
+            !e.active
+        ) {
+
+            continue;
+
+        }
+
 
         const x =
-            e.x - cameraX;
+            e.x -
+            cameraX;
 
 
-        /* Körper */
+        if (
+            x < -100 ||
+            x > W + 100
+        ) {
+
+            continue;
+
+        }
+
+
+        /*
+            Schatten
+        */
+
+        ctx.fillStyle =
+            "rgba(0,0,0,.25)";
+
+
+        ctx.fillRect(
+            x + 3,
+            e.y + e.h,
+            34,
+            6
+        );
+
+
+        /*
+            Körper
+        */
 
         ctx.fillStyle =
             "#7c3aed";
+
 
         ctx.fillRect(
             x,
@@ -1174,10 +1929,13 @@ function drawEnemies() {
         );
 
 
-        /* Kopf */
+        /*
+            Kopf
+        */
 
         ctx.fillStyle =
             "#a855f7";
+
 
         ctx.fillRect(
             x + 5,
@@ -1187,10 +1945,13 @@ function drawEnemies() {
         );
 
 
-        /* Augen */
+        /*
+            Augen
+        */
 
         ctx.fillStyle =
             "white";
+
 
         ctx.fillRect(
             x + 8,
@@ -1198,6 +1959,7 @@ function drawEnemies() {
             8,
             8
         );
+
 
         ctx.fillRect(
             x + 24,
@@ -1207,10 +1969,13 @@ function drawEnemies() {
         );
 
 
-        /* Pupillen */
+        /*
+            Pupillen
+        */
 
         ctx.fillStyle =
             "#111";
+
 
         ctx.fillRect(
             x + 11,
@@ -1218,6 +1983,7 @@ function drawEnemies() {
             4,
             5
         );
+
 
         ctx.fillRect(
             x + 27,
@@ -1232,77 +1998,13 @@ function drawEnemies() {
 
 
 /* =========================================================
-   GOAL
-========================================================= */
-
-function drawGoal() {
-
-    const x =
-        4800 - cameraX;
-
-
-    /* Fahnenstange */
-
-    ctx.fillStyle =
-        "#38220f";
-
-    ctx.fillRect(
-        x,
-        350,
-        15,
-        150
-    );
-
-
-    /* Flagge */
-
-    ctx.fillStyle =
-        "#ffcf33";
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        x + 15,
-        350
-    );
-
-    ctx.lineTo(
-        x + 100,
-        380
-    );
-
-    ctx.lineTo(
-        x + 15,
-        410
-    );
-
-    ctx.closePath();
-
-    ctx.fill();
-
-
-    /* Schrift */
-
-    ctx.fillStyle =
-        "white";
-
-    ctx.font =
-        "bold 18px Arial";
-
-    ctx.fillText(
-        "ZIEL",
-        x + 25,
-        390
-    );
-
-}
-
-
-/* =========================================================
    COLLISION
 ========================================================= */
 
-function collision(a, b) {
+function collision(
+    a,
+    b
+) {
 
     return (
 
@@ -1324,161 +2026,45 @@ function collision(a, b) {
 
 
 /* =========================================================
-   UPDATE
+   PLAYER VS PLATFORM
 ========================================================= */
 
-function update(dt) {
-
-    if (
-        gameOver ||
-        won
-    ) {
-
-        return;
-
-    }
-
-
-    /* =====================================================
-       MOVEMENT
-    ===================================================== */
-
-
-    /*
-        LINKS:
-
-        A
-        Pfeil links
-    */
-
-    const movingLeft =
-        keys["a"] ||
-        keys["arrowleft"];
-
-
-    /*
-        RECHTS:
-
-        D
-        Pfeil rechts
-    */
-
-    const movingRight =
-        keys["d"] ||
-        keys["arrowright"];
-
-
-    /*
-        Wenn links gedrückt:
-    */
-
-    if (movingLeft) {
-
-        player.vx =
-            -player.speed;
-
-    }
-
-
-    /*
-        Wenn rechts gedrückt:
-    */
-
-    else if (movingRight) {
-
-        player.vx =
-            player.speed;
-
-    }
-
-
-    /*
-        Keine Richtung:
-
-        Spieler wird langsamer.
-    */
-
-    else {
-
-        player.vx *= 0.8;
-
-    }
-
-
-    /* =====================================================
-       JUMP
-    ===================================================== */
-
-
-    const jumping =
-        keys["w"] ||
-        keys["arrowup"] ||
-        keys[" "];
-
-
-    if (
-        jumping &&
-        player.grounded
-    ) {
-
-        player.vy =
-            player.jump;
-
-        player.grounded =
-            false;
-
-    }
-
-
-    /* =====================================================
-       GRAVITY
-    ===================================================== */
-
-    player.vy += 0.65;
-
-
-    /* =====================================================
-       PLAYER POSITION
-    ===================================================== */
-
-    player.x +=
-        player.vx;
-
-    player.y +=
-        player.vy;
-
-
-    /* Weltgrenzen */
-
-    if (
-        player.x < 0
-    ) {
-
-        player.x = 0;
-
-    }
-
-
-    if (
-        player.x >
-        worldWidth - player.w
-    ) {
-
-        player.x =
-            worldWidth - player.w;
-
-    }
-
+function handlePlatforms() {
 
     player.grounded =
         false;
 
 
-    /* =====================================================
-       PLATFORM COLLISION
-    ===================================================== */
+    for (
+        const p of platforms
+    ) {
 
-    for (const p of platforms) {
+        /*
+            Plattformen, die weit hinter
+            dem Spieler liegen, ignorieren.
+        */
+
+        if (
+            p.x + p.w <
+            player.x - 100
+        ) {
+
+            continue;
+
+        }
+
+
+        if (
+            p.x >
+            player.x +
+            player.w +
+            100
+        ) {
+
+            continue;
+
+        }
+
 
         const wasAbove =
             player.y +
@@ -1502,7 +2088,7 @@ function update(dt) {
 
             player.y +
             player.h <=
-            p.y + 30 &&
+            p.y + 35 &&
 
             wasAbove &&
 
@@ -1514,8 +2100,10 @@ function update(dt) {
                 p.y -
                 player.h;
 
+
             player.vy =
                 0;
+
 
             player.grounded =
                 true;
@@ -1524,12 +2112,18 @@ function update(dt) {
 
     }
 
+}
 
-    /* =====================================================
-       COINS
-    ===================================================== */
 
-    for (const c of coins) {
+/* =========================================================
+   UPDATE COINS
+========================================================= */
+
+function updateCoins() {
+
+    for (
+        const c of coins
+    ) {
 
         if (
             c.collected
@@ -1543,16 +2137,16 @@ function update(dt) {
         const coinBox = {
 
             x:
-                c.x - 12,
+                c.x - 14,
 
             y:
-                c.y - 12,
+                c.y - 14,
 
             w:
-                24,
+                28,
 
             h:
-                24
+                28
 
         };
 
@@ -1567,18 +2161,50 @@ function update(dt) {
             c.collected =
                 true;
 
+
             score++;
+
+
+            /*
+                Kleine Belohnung:
+                Münzen lassen den Spieler
+                minimal nach oben springen.
+            */
+
+            if (
+                player.grounded
+            ) {
+
+                player.vy =
+                    -2;
+
+            }
 
         }
 
     }
 
+}
 
-    /* =====================================================
-       ENEMIES
-    ===================================================== */
 
-    for (const e of enemies) {
+/* =========================================================
+   UPDATE ENEMIES
+========================================================= */
+
+function updateEnemies() {
+
+    for (
+        const e of enemies
+    ) {
+
+        if (
+            !e.active
+        ) {
+
+            continue;
+
+        }
+
 
         e.x +=
             e.vx;
@@ -1594,35 +2220,55 @@ function update(dt) {
         }
 
 
+        /*
+            Gegner bleibt ungefähr
+            auf seiner Plattform.
+        */
+
+        const enemyBox = {
+
+            x: e.x,
+
+            y: e.y,
+
+            w: e.w,
+
+            h: e.h
+
+        };
+
+
         if (
             collision(
                 player,
-                e
+                enemyBox
             ) &&
             player.invincible <= 0
         ) {
 
 
             /*
-                Gegner von oben treffen
+                Gegner von oben besiegen.
             */
 
             if (
+
                 player.vy > 0 &&
+
                 player.y +
                 player.h -
-                e.y < 25
+                e.y <
+                25
+
             ) {
 
                 player.vy =
-                    -9;
+                    -10;
 
-                /*
-                    Gegner entfernen
-                */
 
-                e.x =
-                    -1000;
+                e.active =
+                    false;
+
 
                 score += 2;
 
@@ -1630,25 +2276,31 @@ function update(dt) {
 
 
             /*
-                Spieler wird getroffen
+                Spieler getroffen.
             */
 
             else {
 
                 lives--;
 
+
                 player.invincible =
                     100;
 
-                player.x -=
-                    80;
+
+                player.vx =
+                    -7;
+
+
+                player.vy =
+                    -8;
 
 
                 if (
                     lives <= 0
                 ) {
 
-                    endGame(false);
+                    endGame();
 
                 }
 
@@ -1658,10 +2310,187 @@ function update(dt) {
 
     }
 
+}
 
-    /* =====================================================
-       INVINCIBILITY
-    ===================================================== */
+
+/* =========================================================
+   UPDATE PLAYER
+========================================================= */
+
+function updatePlayer() {
+
+
+    /*
+        LINKS
+    */
+
+    const movingLeft =
+        keys["a"] ||
+        keys["arrowleft"];
+
+
+    /*
+        RECHTS
+    */
+
+    const movingRight =
+        keys["d"] ||
+        keys["arrowright"];
+
+
+    /*
+        Bewegung links
+    */
+
+    if (
+        movingLeft
+    ) {
+
+        player.vx =
+            -player.speed;
+
+    }
+
+
+    /*
+        Bewegung rechts
+    */
+
+    else if (
+        movingRight
+    ) {
+
+        player.vx =
+            player.speed;
+
+    }
+
+
+    /*
+        Keine Taste.
+    */
+
+    else {
+
+        player.vx *=
+            0.80;
+
+    }
+
+
+    /*
+        Leichtes Limit.
+    */
+
+    if (
+        player.vx >
+        player.speed
+    ) {
+
+        player.vx =
+            player.speed;
+
+    }
+
+
+    if (
+        player.vx <
+        -player.speed
+    ) {
+
+        player.vx =
+            -player.speed;
+
+    }
+
+
+    /*
+        SPRINGEN
+
+        W
+        Pfeil hoch
+        Leertaste
+    */
+
+    const jumping =
+        keys["w"] ||
+        keys["arrowup"] ||
+        keys[" "];
+
+
+    if (
+        jumping &&
+        player.grounded
+    ) {
+
+        player.vy =
+            player.jump;
+
+
+        player.grounded =
+            false;
+
+    }
+
+
+    /*
+        Schwerkraft
+    */
+
+    player.vy +=
+        0.65;
+
+
+    /*
+        Position
+    */
+
+    player.x +=
+        player.vx;
+
+
+    player.y +=
+        player.vy;
+
+
+    /*
+        Welt beginnt bei 0.
+    */
+
+    if (
+        player.x < 0
+    ) {
+
+        player.x =
+            0;
+
+    }
+
+
+    /*
+        Plattformen.
+    */
+
+    handlePlatforms();
+
+
+    /*
+        Münzen.
+    */
+
+    updateCoins();
+
+
+    /*
+        Gegner.
+    */
+
+    updateEnemies();
+
+
+    /*
+        Unverwundbarkeit.
+    */
 
     if (
         player.invincible > 0
@@ -1672,13 +2501,13 @@ function update(dt) {
     }
 
 
-    /* =====================================================
-       FALL
-    ===================================================== */
+    /*
+        Spieler fällt.
+    */
 
     if (
         player.y >
-        H + 150
+        H + 200
     ) {
 
         lives--;
@@ -1688,73 +2517,86 @@ function update(dt) {
             lives <= 0
         ) {
 
-            endGame(false);
+            endGame();
 
         }
 
-
         else {
 
-            player.x -=
-                150;
+            /*
+                Respawn auf einer
+                sicheren Position.
+            */
+
+            player.x =
+                Math.max(
+                    50,
+                    player.x - 300
+                );
+
 
             player.y =
-                200;
+                250;
+
+
+            player.vx =
+                0;
+
 
             player.vy =
                 0;
+
+
+            player.invincible =
+                100;
 
         }
 
     }
 
+}
 
-    /* =====================================================
-       CAMERA
-    ===================================================== */
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+function updateCamera() {
 
     const targetCamera =
         player.x -
-        W * .35;
+        W * 0.35;
 
 
     cameraX +=
         (
             targetCamera -
             cameraX
-        ) * .08;
+        ) * 0.08;
 
+
+    /*
+        Kamera darf nicht negativ sein.
+    */
 
     cameraX =
         Math.max(
             0,
-            Math.min(
-                cameraX,
-                worldWidth - W
-            )
+            cameraX
         );
 
 
-    /* =====================================================
-       WIN
-    ===================================================== */
-
-    if (
-        player.x > 4750
-    ) {
-
-        endGame(true);
-
-    }
-
-
-    updateUI();
+    distanceTravelled =
+        Math.max(
+            distanceTravelled,
+            player.x
+        );
 
 }
 
 
 /* =========================================================
-   UI
+   UPDATE UI
 ========================================================= */
 
 function updateUI() {
@@ -1774,28 +2616,44 @@ function updateUI() {
     }
 
 
-    document.getElementById(
-        "stats"
-    ).innerHTML =
+    document
+        .getElementById(
+            "stats"
+        )
+        .innerHTML =
 
         hearts +
         "&nbsp;&nbsp; 🪙 " +
         score;
 
+
+    const meters =
+        Math.floor(
+            distanceTravelled / 10
+        );
+
+
+    document
+        .getElementById(
+            "distance"
+        )
+        .innerText =
+
+        "📏 " +
+        meters +
+        " m";
+
 }
 
 
 /* =========================================================
-   END GAME
+   GAME OVER
 ========================================================= */
 
-function endGame(win) {
+function endGame() {
 
     gameOver =
         true;
-
-    won =
-        win;
 
 
     const message =
@@ -1808,42 +2666,28 @@ function endGame(win) {
         "flex";
 
 
-    if (win) {
-
-        document.getElementById(
+    document
+        .getElementById(
             "messageTitle"
-        ).innerText =
-            "🏆 LEVEL GESCHAFFT!";
+        )
+        .innerText =
+
+        "💀 GAME OVER";
 
 
-        document.getElementById(
+    document
+        .getElementById(
             "messageText"
-        ).innerText =
+        )
+        .innerText =
 
-            "Du hast " +
-            score +
-            " Münzen gesammelt!";
-
-    }
-
-
-    else {
-
-        document.getElementById(
-            "messageTitle"
-        ).innerText =
-            "💀 GAME OVER";
-
-
-        document.getElementById(
-            "messageText"
-        ).innerText =
-
-            "Du hast " +
-            score +
-            " Münzen gesammelt.";
-
-    }
+        "Du bist " +
+        Math.floor(
+            distanceTravelled / 10
+        ) +
+        " Meter weit gekommen und hast " +
+        score +
+        " Münzen gesammelt.";
 
 }
 
@@ -1854,24 +2698,41 @@ function endGame(win) {
 
 function restart() {
 
+    /*
+        Spieler
+    */
+
     player.x =
         150;
+
 
     player.y =
         300;
 
+
     player.vx =
         0;
 
+
     player.vy =
         0;
+
 
     player.grounded =
         false;
 
 
+    player.invincible =
+        0;
+
+
+    /*
+        Werte
+    */
+
     score =
         0;
+
 
     lives =
         3;
@@ -1881,93 +2742,352 @@ function restart() {
         0;
 
 
+    distanceTravelled =
+        0;
+
+
     gameOver =
         false;
 
-    won =
-        false;
-
 
     /*
-        Coins zurücksetzen
+        Welt löschen
     */
 
-    for (const c of coins) {
+    platforms.length =
+        0;
 
-        c.collected =
-            false;
 
-    }
+    coins.length =
+        0;
+
+
+    enemies.length =
+        0;
 
 
     /*
-        Gegner zurücksetzen
+        Welt neu aufbauen
     */
 
-    enemies[0].x =
-        550;
+    addPlatform(
+        0,
+        500,
+        1000,
+        100,
+        false
+    );
 
-    enemies[1].x =
-        1100;
 
-    enemies[2].x =
-        1750;
+    addCoin(
+        260,
+        455
+    );
 
-    enemies[3].x =
-        2350;
 
-    enemies[4].x =
-        3100;
+    addCoin(
+        380,
+        455
+    );
 
-    enemies[5].x =
-        3700;
+
+    addCoin(
+        520,
+        455
+    );
+
+
+    addCoin(
+        670,
+        455
+    );
+
+
+    addCoin(
+        820,
+        455
+    );
+
+
+    addEnemy(
+        600,
+        460,
+        450,
+        900
+    );
+
+
+    worldGeneratedUntil =
+        1000;
 
 
     /*
-        Gegnergeschwindigkeit
-        wiederherstellen
+        Neue Welt generieren.
     */
 
-    enemies[0].vx =
-        1.5;
-
-    enemies[1].vx =
-        1.8;
-
-    enemies[2].vx =
-        1.5;
-
-    enemies[3].vx =
-        2;
-
-    enemies[4].vx =
-        1.7;
-
-    enemies[5].vx =
-        2;
+    generateWorld();
 
 
     /*
-        Tastatur zurücksetzen
+        Keys leeren.
     */
 
     keys = {};
 
 
-    document.getElementById(
-        "message"
-    ).style.display =
+    /*
+        Game-Over Fenster schließen.
+    */
+
+    document
+        .getElementById(
+            "message"
+        )
+        .style.display =
         "none";
+
+
+    /*
+        Canvas fokussieren.
+    */
+
+    canvas.focus();
 
 
     updateUI();
 
+}
+
+
+/* =========================================================
+   CLEAN OLD OBJECTS
+========================================================= */
+
+function cleanupWorld() {
 
     /*
-        Canvas wieder fokussieren
+        Objekte weit hinter der Kamera
+        können entfernt werden.
+
+        Dadurch bleibt das Spiel auch nach
+        langer Spielzeit performant.
     */
 
-    canvas.focus();
+    const cleanupBefore =
+        cameraX - 1500;
+
+
+    /*
+        Plattformen
+    */
+
+    for (
+        let i =
+            platforms.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        if (
+            platforms[i].x +
+            platforms[i].w <
+            cleanupBefore
+        ) {
+
+            /*
+                Startplattform nicht löschen.
+            */
+
+            if (
+                platforms[i].x >
+                0
+            ) {
+
+                platforms.splice(
+                    i,
+                    1
+                );
+
+            }
+
+        }
+
+    }
+
+
+    /*
+        Coins
+    */
+
+    for (
+        let i =
+            coins.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        if (
+            coins[i].x <
+            cleanupBefore
+        ) {
+
+            coins.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+
+
+    /*
+        Gegner
+    */
+
+    for (
+        let i =
+            enemies.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        if (
+            enemies[i].x <
+            cleanupBefore
+        ) {
+
+            enemies.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   MAIN UPDATE
+========================================================= */
+
+function update(dt) {
+
+    if (
+        gameOver
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Neue Welt erzeugen.
+    */
+
+    generateWorld();
+
+
+    /*
+        Spieler.
+    */
+
+    updatePlayer();
+
+
+    /*
+        Kamera.
+    */
+
+    updateCamera();
+
+
+    /*
+        Alte Objekte löschen.
+    */
+
+    cleanupWorld();
+
+
+    /*
+        UI.
+    */
+
+    updateUI();
+
+}
+
+
+/* =========================================================
+   DRAW
+========================================================= */
+
+function draw(time) {
+
+    ctx.clearRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    /*
+        Hintergrund.
+    */
+
+    drawBackground();
+
+
+    /*
+        Plattformen.
+    */
+
+    drawPlatforms();
+
+
+    /*
+        Coins.
+    */
+
+    drawCoins(
+        time
+    );
+
+
+    /*
+        Gegner.
+    */
+
+    drawEnemies();
+
+
+    /*
+        Spieler.
+    */
+
+    if (
+
+        player.invincible <= 0 ||
+
+        Math.floor(
+            player.invincible / 5
+        ) % 2 === 0
+
+    ) {
+
+        drawPlayer();
+
+    }
 
 }
 
@@ -1992,60 +3112,7 @@ function loop(time) {
     update(dt);
 
 
-    /* =====================================================
-       CLEAR
-    ===================================================== */
-
-    ctx.clearRect(
-        0,
-        0,
-        W,
-        H
-    );
-
-
-    /* =====================================================
-       DRAW BACKGROUND
-    ===================================================== */
-
-    drawBackground();
-
-
-    /* =====================================================
-       DRAW LEVEL
-    ===================================================== */
-
-    drawPlatforms();
-
-
-    drawCoins(
-        time
-    );
-
-
-    drawEnemies();
-
-
-    drawGoal();
-
-
-    /* =====================================================
-       DRAW PLAYER
-    ===================================================== */
-
-    if (
-
-        player.invincible <= 0 ||
-
-        Math.floor(
-            player.invincible / 5
-        ) % 2 === 0
-
-    ) {
-
-        drawPlayer();
-
-    }
+    draw(time);
 
 
     requestAnimationFrame(
@@ -2059,6 +3126,8 @@ function loop(time) {
    START
 ========================================================= */
 
+generateWorld();
+
 updateUI();
 
 requestAnimationFrame(
@@ -2066,15 +3135,14 @@ requestAnimationFrame(
 );
 
 
-/*
-    Canvas automatisch fokussieren
-*/
+setTimeout(
+    function() {
 
-setTimeout(function() {
+        canvas.focus();
 
-    canvas.focus();
-
-}, 500);
+    },
+    500
+);
 
 
 </script>
