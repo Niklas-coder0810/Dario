@@ -388,7 +388,6 @@ const canvas =
 const ctx =
     canvas.getContext("2d");
 
-
 let W = 0;
 let H = 0;
 
@@ -432,18 +431,21 @@ let lastTime = 0;
 
 let worldGeneratedUntil = 0;
 
-let highestPlatform = 0;
-
 let distanceTravelled = 0;
 
 
 /*
-    Die Welt wird immer weiter erzeugt.
-
-    Dadurch gibt es kein festes Ende.
+    Projektile der Schützen.
 */
 
-const generationDistance = 2500;
+const projectiles = [];
+
+
+/*
+    Endloswelt.
+*/
+
+const generationDistance = 2800;
 
 
 /* =========================================================
@@ -569,11 +571,6 @@ canvas.addEventListener(
 );
 
 
-/*
-    Globale Events als zusätzliche
-    Absicherung für Streamlit.
-*/
-
 window.addEventListener(
     "keydown",
     function(e) {
@@ -638,7 +635,7 @@ const enemies = [];
 
 
 /* =========================================================
-   RANDOM HELPER
+   RANDOM
 ========================================================= */
 
 function random(min, max) {
@@ -676,13 +673,9 @@ function addPlatform(
     platforms.push({
 
         x: x,
-
         y: y,
-
         w: w,
-
         h: h,
-
         floating: floating
 
     });
@@ -702,9 +695,7 @@ function addCoin(
     coins.push({
 
         x: x,
-
         y: y,
-
         collected: false
 
     });
@@ -720,29 +711,169 @@ function addEnemy(
     x,
     y,
     min,
-    max
+    max,
+    type = "normal"
 ) {
 
-    enemies.push({
+    let enemy;
 
-        x: x,
 
-        y: y,
+    /*
+        NORMALER GEGNER
+    */
 
-        w: 40,
+    if (
+        type === "normal"
+    ) {
 
-        h: 40,
+        enemy = {
 
-        vx:
-            random(1.2, 2.1),
+            x: x,
 
-        min: min,
+            y: y,
 
-        max: max,
+            w: 40,
 
-        active: true
+            h: 40,
 
-    });
+            vx: random(
+                1.2,
+                1.8
+            ),
+
+            min: min,
+
+            max: max,
+
+            type: "normal",
+
+            active: true
+
+        };
+
+    }
+
+
+    /*
+        SCHNELLER GEGNER
+    */
+
+    else if (
+        type === "fast"
+    ) {
+
+        enemy = {
+
+            x: x,
+
+            y: y,
+
+            w: 34,
+
+            h: 34,
+
+            vx: random(
+                3.0,
+                4.2
+            ),
+
+            min: min,
+
+            max: max,
+
+            type: "fast",
+
+            active: true
+
+        };
+
+    }
+
+
+    /*
+        GROSSER GEGNER
+    */
+
+    else if (
+        type === "big"
+    ) {
+
+        enemy = {
+
+            x: x,
+
+            y: y - 30,
+
+            w: 68,
+
+            h: 70,
+
+            vx: random(
+                0.7,
+                1.1
+            ),
+
+            min: min,
+
+            max: max,
+
+            type: "big",
+
+            active: true
+
+        };
+
+    }
+
+
+    /*
+        SCHÜTZE
+    */
+
+    else if (
+        type === "shooter"
+    ) {
+
+        enemy = {
+
+            x: x,
+
+            y: y,
+
+            w: 42,
+
+            h: 55,
+
+            vx: 0,
+
+            min: min,
+
+            max: max,
+
+            type: "shooter",
+
+            active: true,
+
+            cooldown:
+                randomInt(
+                    60,
+                    130
+                )
+
+        };
+
+    }
+
+
+    if (
+        enemy
+    ) {
+
+        enemies.push(
+            enemy
+        );
+
+    }
 
 }
 
@@ -750,11 +881,6 @@ function addEnemy(
 /* =========================================================
    INITIAL WORLD
 ========================================================= */
-
-
-/*
-    Startplattform
-*/
 
 addPlatform(
     0,
@@ -766,7 +892,7 @@ addPlatform(
 
 
 /*
-    Einfache Münzen nahe am Boden.
+    Leicht erreichbare Startmünzen.
 */
 
 addCoin(
@@ -796,23 +922,20 @@ addCoin(
 
 
 /*
-    Erste Gegner.
+    Erster Gegner.
 */
 
 addEnemy(
     600,
     460,
     450,
-    900
+    900,
+    "normal"
 );
 
 
-/*
-    Erzeuge direkt die ersten
-    Abschnitte.
-*/
-
-worldGeneratedUntil = 1000;
+worldGeneratedUntil =
+    1000;
 
 
 /* =========================================================
@@ -823,7 +946,8 @@ function generateWorld() {
 
     while (
         worldGeneratedUntil <
-        player.x + generationDistance
+        player.x +
+        generationDistance
     ) {
 
         const startX =
@@ -831,26 +955,68 @@ function generateWorld() {
 
 
         /*
-            Normale Bodenplattform.
+            =================================================
+            BODEN
+            =================================================
+
+            Die Bodenhöhe darf sich nur langsam ändern.
+            Dadurch entstehen keine unmöglichen Sprünge.
         */
 
         const groundWidth =
             randomInt(
-                500,
-                850
+                600,
+                900
             );
 
 
-        /*
-            Höhe des Bodens
-            variiert leicht.
-        */
+        const previousGround =
+            platforms.length > 0
+                ? platforms[
+                    platforms.length - 1
+                  ]
+                : null;
 
-        const groundY =
-            randomInt(
-                480,
-                530
-            );
+
+        let groundY;
+
+
+        if (
+            previousGround
+        ) {
+
+            /*
+                Maximal ungefähr 60 Pixel
+                Höhenunterschied.
+
+                Das ist mit dem Sprung gut machbar.
+            */
+
+            groundY =
+                previousGround.y +
+                randomInt(
+                    -55,
+                    55
+                );
+
+
+            groundY =
+                Math.max(
+                    450,
+                    Math.min(
+                        535,
+                        groundY
+                    )
+                );
+
+        }
+
+        else {
+
+            groundY =
+                500;
+
+        }
 
 
         addPlatform(
@@ -862,18 +1028,14 @@ function generateWorld() {
         );
 
 
-        /*
-            Mehrere leicht erreichbare
-            Münzen.
-
-            Sie befinden sich nur
-            wenige Pixel über dem Boden.
-        */
+        /* =================================================
+           BODEN-MÜNZEN
+        ================================================= */
 
         const coinCount =
             randomInt(
-                4,
-                7
+                5,
+                8
             );
 
 
@@ -885,13 +1047,19 @@ function generateWorld() {
 
             const coinX =
                 startX +
-                80 +
+                70 +
                 i *
                 (
                     groundWidth /
                     (coinCount + 1)
                 );
 
+
+            /*
+                Nur ca. 35 Pixel über dem Boden.
+                Dadurch sind die Münzen leicht
+                einzusammeln.
+            */
 
             addCoin(
                 coinX,
@@ -901,12 +1069,20 @@ function generateWorld() {
         }
 
 
+        /* =================================================
+           GEGNER
+        ================================================= */
+
+        const enemyRoll =
+            Math.random();
+
+
         /*
-            Gegner nur manchmal.
+            Normal
         */
 
         if (
-            Math.random() < 0.75
+            enemyRoll < 0.30
         ) {
 
             const enemyX =
@@ -921,47 +1097,182 @@ function generateWorld() {
                 enemyX,
                 groundY - 40,
                 startX + 80,
-                startX + groundWidth - 80
+                startX +
+                groundWidth -
+                80,
+                "normal"
             );
 
         }
 
 
         /*
-            =================================================
-            SCHWEBENDE PLATTFORM
-            =================================================
+            Schnell
+        */
 
-            Ein Teil der Welt bekommt
-            eine Plattform in der Luft.
+        else if (
+            enemyRoll < 0.52
+        ) {
+
+            const enemyX =
+                startX +
+                random(
+                    180,
+                    groundWidth - 100
+                );
+
+
+            addEnemy(
+                enemyX,
+                groundY - 34,
+                startX + 80,
+                startX +
+                groundWidth -
+                80,
+                "fast"
+            );
+
+        }
+
+
+        /*
+            Groß
+        */
+
+        else if (
+            enemyRoll < 0.68
+        ) {
+
+            const enemyX =
+                startX +
+                random(
+                    220,
+                    groundWidth - 130
+                );
+
+
+            addEnemy(
+                enemyX,
+                groundY - 70,
+                startX + 100,
+                startX +
+                groundWidth -
+                100,
+                "big"
+            );
+
+        }
+
+
+        /*
+            Schütze
+        */
+
+        else if (
+            enemyRoll < 0.82
+        ) {
+
+            const enemyX =
+                startX +
+                random(
+                    250,
+                    groundWidth - 100
+                );
+
+
+            addEnemy(
+                enemyX,
+                groundY - 55,
+                startX,
+                startX +
+                groundWidth,
+                "shooter"
+            );
+
+        }
+
+
+        /*
+            Manchmal zwei Gegner.
         */
 
         if (
-            Math.random() < 0.72
+            Math.random() <
+            0.18
         ) {
+
+            const enemyX =
+                startX +
+                random(
+                    150,
+                    groundWidth - 100
+                );
+
+
+            addEnemy(
+                enemyX,
+                groundY - 40,
+                startX + 50,
+                startX +
+                groundWidth -
+                50,
+                "fast"
+            );
+
+        }
+
+
+        /* =================================================
+           SCHWEBENDE PLATTFORM
+        ================================================= */
+
+        if (
+            Math.random() <
+            0.78
+        ) {
+
+            /*
+                Nicht zu weit weg vom Boden.
+                Der Spieler soll sie erreichen können.
+            */
 
             const floatingX =
                 startX +
                 random(
-                    100,
+                    120,
                     Math.max(
                         150,
-                        groundWidth - 250
+                        groundWidth - 280
                     )
                 );
 
 
-            const floatingY =
+            /*
+                Die Plattform befindet sich
+                100-170 Pixel über dem Boden.
+
+                Mit dem Sprung ist das erreichbar.
+            */
+
+            const floatingHeight =
                 randomInt(
-                    270,
-                    390
+                    105,
+                    160
+                );
+
+
+            const floatingY =
+                Math.max(
+                    280,
+                    groundY -
+                    floatingHeight
                 );
 
 
             const floatingWidth =
                 randomInt(
-                    180,
-                    320
+                    190,
+                    330
                 );
 
 
@@ -974,18 +1285,14 @@ function generateWorld() {
             );
 
 
-            /*
-                Münzen auf der
-                schwebenden Plattform.
-
-                Dadurch muss der Spieler
-                wirklich hochspringen.
-            */
+            /* =================================================
+               MÜNZEN AUF SCHWEBENDER PLATTFORM
+            ================================================= */
 
             const floatingCoins =
                 randomInt(
-                    2,
-                    4
+                    3,
+                    5
                 );
 
 
@@ -997,11 +1304,11 @@ function generateWorld() {
 
                 const coinX =
                     floatingX +
-                    45 +
+                    35 +
                     i *
                     (
                         (
-                            floatingWidth - 90
+                            floatingWidth - 70
                         ) /
                         Math.max(
                             1,
@@ -1019,28 +1326,35 @@ function generateWorld() {
 
 
             /*
-                Manchmal noch eine
-                zweite, höhere Plattform.
+                Manchmal ein kleiner
+                zweiter Sprung.
             */
 
             if (
-                Math.random() < 0.35
+                Math.random() <
+                0.40
             ) {
 
                 const upperX =
                     floatingX +
                     random(
-                        -60,
+                        -30,
                         floatingWidth - 80
                     );
 
 
+                /*
+                    Auch diese Plattform bleibt
+                    erreichbar.
+                */
+
                 const upperY =
                     Math.max(
-                        170,
-                        floatingY - random(
-                            100,
-                            150
+                        180,
+                        floatingY -
+                        randomInt(
+                            90,
+                            120
                         )
                     );
 
@@ -1048,7 +1362,7 @@ function generateWorld() {
                 const upperWidth =
                     randomInt(
                         150,
-                        240
+                        230
                     );
 
 
@@ -1062,12 +1376,19 @@ function generateWorld() {
 
 
                 /*
-                    Münzen auch hier.
+                    Münzen oben.
                 */
 
                 addCoin(
                     upperX +
-                    upperWidth / 2,
+                    upperWidth * 0.35,
+                    upperY - 32
+                );
+
+
+                addCoin(
+                    upperX +
+                    upperWidth * 0.65,
                     upperY - 32
                 );
 
@@ -1076,27 +1397,27 @@ function generateWorld() {
         }
 
 
-        /*
-            Gelegentlich eine
-            Münz-Reihe in der Luft.
-        */
+        /* =================================================
+           LUFT-MÜNZEN
+        ================================================= */
 
         if (
-            Math.random() < 0.45
+            Math.random() <
+            0.50
         ) {
 
             const airStartX =
                 startX +
                 random(
                     100,
-                    groundWidth - 150
+                    groundWidth - 160
                 );
 
 
             const airY =
                 randomInt(
-                    300,
-                    400
+                    330,
+                    420
                 );
 
 
@@ -1110,7 +1431,9 @@ function generateWorld() {
                     airStartX +
                     i * 45,
                     airY -
-                    Math.sin(i * 0.8) * 25
+                    Math.sin(
+                        i * 0.8
+                    ) * 20
                 );
 
             }
@@ -1136,7 +1459,7 @@ function generateWorld() {
 
 
 /* =========================================================
-   DRAW SKY
+   SKY
 ========================================================= */
 
 function drawSky() {
@@ -1218,7 +1541,7 @@ function drawSky() {
 
 
     /*
-        Sterne.
+        Sterne
     */
 
     for (
@@ -1380,10 +1703,6 @@ function drawBackground() {
         130
     );
 
-
-    /*
-        Nebel
-    */
 
     const fog =
         ctx.createLinearGradient(
@@ -1584,27 +1903,20 @@ function drawPlatforms() {
 
 
         /*
-            Schwebende Plattform
+            SCHWEBEND
         */
 
         if (
             p.floating
         ) {
 
-            /*
-                Glow
-            */
-
             ctx.shadowBlur =
                 12;
+
 
             ctx.shadowColor =
                 "rgba(100,220,255,.6)";
 
-
-            /*
-                Unterseite
-            */
 
             ctx.fillStyle =
                 "#334a70";
@@ -1617,10 +1929,6 @@ function drawPlatforms() {
                 p.h
             );
 
-
-            /*
-                Blaue Kante
-            */
 
             ctx.fillStyle =
                 "#5ed6e8";
@@ -1639,7 +1947,7 @@ function drawPlatforms() {
 
 
             /*
-                kleine Wolken-Partikel
+                kleine Wolken
             */
 
             ctx.fillStyle =
@@ -1665,14 +1973,10 @@ function drawPlatforms() {
 
 
         /*
-            normale Bodenplattform
+            BODEN
         */
 
         else {
-
-            /*
-                Erde
-            */
 
             ctx.fillStyle =
                 "#49352a";
@@ -1686,10 +1990,6 @@ function drawPlatforms() {
             );
 
 
-            /*
-                Gras
-            */
-
             ctx.fillStyle =
                 "#43b047";
 
@@ -1702,10 +2002,6 @@ function drawPlatforms() {
             );
 
 
-            /*
-                helles Gras
-            */
-
             ctx.fillStyle =
                 "#75d66c";
 
@@ -1717,10 +2013,6 @@ function drawPlatforms() {
                 5
             );
 
-
-            /*
-                Steine
-            */
 
             ctx.fillStyle =
                 "#70503b";
@@ -1782,20 +2074,12 @@ function drawCoins(time) {
         }
 
 
-        /*
-            Kleine Animation.
-        */
-
         const bob =
             Math.sin(
                 time / 200 +
                 c.x
             ) * 5;
 
-
-        /*
-            Glow
-        */
 
         ctx.shadowBlur =
             15;
@@ -1828,10 +2112,6 @@ function drawCoins(time) {
             0;
 
 
-        /*
-            Glanz
-        */
-
         ctx.fillStyle =
             "#fff1a3";
 
@@ -1843,10 +2123,6 @@ function drawCoins(time) {
             11
         );
 
-
-        /*
-            kleiner Rand
-        */
 
         ctx.strokeStyle =
             "#e8a900";
@@ -1888,8 +2164,485 @@ function drawEnemies() {
 
 
         if (
-            x < -100 ||
-            x > W + 100
+            x < -150 ||
+            x > W + 150
+        ) {
+
+            continue;
+
+        }
+
+
+        /* =================================================
+           NORMALER GEGNER
+        ================================================= */
+
+        if (
+            e.type === "normal"
+        ) {
+
+            ctx.fillStyle =
+                "rgba(0,0,0,.25)";
+
+
+            ctx.fillRect(
+                x + 3,
+                e.y + e.h,
+                34,
+                6
+            );
+
+
+            ctx.fillStyle =
+                "#7c3aed";
+
+
+            ctx.fillRect(
+                x,
+                e.y,
+                e.w,
+                e.h
+            );
+
+
+            ctx.fillStyle =
+                "#a855f7";
+
+
+            ctx.fillRect(
+                x + 5,
+                e.y + 5,
+                30,
+                15
+            );
+
+
+            ctx.fillStyle =
+                "white";
+
+
+            ctx.fillRect(
+                x + 8,
+                e.y + 13,
+                8,
+                8
+            );
+
+
+            ctx.fillRect(
+                x + 24,
+                e.y + 13,
+                8,
+                8
+            );
+
+
+            ctx.fillStyle =
+                "#111";
+
+
+            ctx.fillRect(
+                x + 11,
+                e.y + 16,
+                4,
+                5
+            );
+
+
+            ctx.fillRect(
+                x + 27,
+                e.y + 16,
+                4,
+                5
+            );
+
+        }
+
+
+        /* =================================================
+           SCHNELLER GEGNER
+        ================================================= */
+
+        else if (
+            e.type === "fast"
+        ) {
+
+            ctx.fillStyle =
+                "rgba(255,70,70,.25)";
+
+
+            ctx.fillRect(
+                x - 10,
+                e.y + 10,
+                10,
+                15
+            );
+
+
+            ctx.fillStyle =
+                "#ef4444";
+
+
+            ctx.fillRect(
+                x,
+                e.y,
+                e.w,
+                e.h
+            );
+
+
+            ctx.fillStyle =
+                "#ff7777";
+
+
+            ctx.fillRect(
+                x + 4,
+                e.y + 4,
+                26,
+                10
+            );
+
+
+            ctx.fillStyle =
+                "white";
+
+
+            ctx.fillRect(
+                x + 7,
+                e.y + 12,
+                7,
+                7
+            );
+
+
+            ctx.fillRect(
+                x + 22,
+                e.y + 12,
+                7,
+                7
+            );
+
+
+            ctx.fillStyle =
+                "#111";
+
+
+            ctx.fillRect(
+                x + 9,
+                e.y + 14,
+                3,
+                4
+            );
+
+
+            ctx.fillRect(
+                x + 24,
+                e.y + 14,
+                3,
+                4
+            );
+
+        }
+
+
+        /* =================================================
+           GROSSER GEGNER
+        ================================================= */
+
+        else if (
+            e.type === "big"
+        ) {
+
+            /*
+                Schatten
+            */
+
+            ctx.fillStyle =
+                "rgba(0,0,0,.35)";
+
+
+            ctx.fillRect(
+                x + 4,
+                e.y + e.h,
+                e.w - 8,
+                8
+            );
+
+
+            /*
+                Körper
+            */
+
+            ctx.fillStyle =
+                "#14532d";
+
+
+            ctx.fillRect(
+                x,
+                e.y,
+                e.w,
+                e.h
+            );
+
+
+            /*
+                Bauch
+            */
+
+            ctx.fillStyle =
+                "#22c55e";
+
+
+            ctx.fillRect(
+                x + 10,
+                e.y + 20,
+                e.w - 20,
+                38
+            );
+
+
+            /*
+                Augen
+            */
+
+            ctx.fillStyle =
+                "white";
+
+
+            ctx.fillRect(
+                x + 12,
+                e.y + 10,
+                12,
+                12
+            );
+
+
+            ctx.fillRect(
+                x + 44,
+                e.y + 10,
+                12,
+                12
+            );
+
+
+            ctx.fillStyle =
+                "#111";
+
+
+            ctx.fillRect(
+                x + 16,
+                e.y + 14,
+                5,
+                6
+            );
+
+
+            ctx.fillRect(
+                x + 48,
+                e.y + 14,
+                5,
+                6
+            );
+
+
+            /*
+                Hörner
+            */
+
+            ctx.fillStyle =
+                "#d1d5db";
+
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                x + 8,
+                e.y + 5
+            );
+
+            ctx.lineTo(
+                x + 2,
+                e.y - 15
+            );
+
+            ctx.lineTo(
+                x + 18,
+                e.y + 3
+            );
+
+            ctx.fill();
+
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                x + 50,
+                e.y + 5
+            );
+
+            ctx.lineTo(
+                x + 66,
+                e.y - 15
+            );
+
+            ctx.lineTo(
+                x + 58,
+                e.y + 8
+            );
+
+            ctx.fill();
+
+        }
+
+
+        /* =================================================
+           SCHÜTZE
+        ================================================= */
+
+        else if (
+            e.type === "shooter"
+        ) {
+
+            /*
+                Körper
+            */
+
+            ctx.fillStyle =
+                "#92400e";
+
+
+            ctx.fillRect(
+                x,
+                e.y,
+                e.w,
+                e.h
+            );
+
+
+            /*
+                Rüstung
+            */
+
+            ctx.fillStyle =
+                "#f59e0b";
+
+
+            ctx.fillRect(
+                x + 5,
+                e.y + 8,
+                32,
+                25
+            );
+
+
+            /*
+                Kopf
+            */
+
+            ctx.fillStyle =
+                "#fed7aa";
+
+
+            ctx.fillRect(
+                x + 8,
+                e.y - 12,
+                26,
+                23
+            );
+
+
+            /*
+                Helm
+            */
+
+            ctx.fillStyle =
+                "#374151";
+
+
+            ctx.fillRect(
+                x + 5,
+                e.y - 15,
+                32,
+                8
+            );
+
+
+            /*
+                Augen
+            */
+
+            ctx.fillStyle =
+                "#111";
+
+
+            ctx.fillRect(
+                x + 13,
+                e.y - 4,
+                4,
+                5
+            );
+
+
+            ctx.fillRect(
+                x + 24,
+                e.y - 4,
+                4,
+                5
+            );
+
+
+            /*
+                Waffe
+            */
+
+            ctx.fillStyle =
+                "#1f2937";
+
+
+            ctx.fillRect(
+                x + 35,
+                e.y + 20,
+                27,
+                8
+            );
+
+
+            ctx.fillStyle =
+                "#6b7280";
+
+
+            ctx.fillRect(
+                x + 57,
+                e.y + 18,
+                12,
+                12
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   PROJECTILES
+========================================================= */
+
+function drawProjectiles() {
+
+    for (
+        const p of projectiles
+    ) {
+
+        const x =
+            p.x -
+            cameraX;
+
+
+        if (
+            x < -50 ||
+            x > W + 50
         ) {
 
             continue;
@@ -1898,99 +2651,38 @@ function drawEnemies() {
 
 
         /*
-            Schatten
+            Leuchtender Schuss
         */
 
-        ctx.fillStyle =
-            "rgba(0,0,0,.25)";
+        ctx.shadowBlur =
+            12;
 
 
-        ctx.fillRect(
-            x + 3,
-            e.y + e.h,
-            34,
-            6
-        );
+        ctx.shadowColor =
+            "#ff4d4d";
 
-
-        /*
-            Körper
-        */
 
         ctx.fillStyle =
-            "#7c3aed";
+            "#ff5252";
 
 
-        ctx.fillRect(
+        ctx.beginPath();
+
+
+        ctx.arc(
             x,
-            e.y,
-            e.w,
-            e.h
+            p.y,
+            7,
+            0,
+            Math.PI * 2
         );
 
 
-        /*
-            Kopf
-        */
-
-        ctx.fillStyle =
-            "#a855f7";
+        ctx.fill();
 
 
-        ctx.fillRect(
-            x + 5,
-            e.y + 5,
-            30,
-            15
-        );
-
-
-        /*
-            Augen
-        */
-
-        ctx.fillStyle =
-            "white";
-
-
-        ctx.fillRect(
-            x + 8,
-            e.y + 13,
-            8,
-            8
-        );
-
-
-        ctx.fillRect(
-            x + 24,
-            e.y + 13,
-            8,
-            8
-        );
-
-
-        /*
-            Pupillen
-        */
-
-        ctx.fillStyle =
-            "#111";
-
-
-        ctx.fillRect(
-            x + 11,
-            e.y + 16,
-            4,
-            5
-        );
-
-
-        ctx.fillRect(
-            x + 27,
-            e.y + 16,
-            4,
-            5
-        );
+        ctx.shadowBlur =
+            0;
 
     }
 
@@ -2026,7 +2718,7 @@ function collision(
 
 
 /* =========================================================
-   PLAYER VS PLATFORM
+   PLATFORM COLLISION
 ========================================================= */
 
 function handlePlatforms() {
@@ -2038,11 +2730,6 @@ function handlePlatforms() {
     for (
         const p of platforms
     ) {
-
-        /*
-            Plattformen, die weit hinter
-            dem Spieler liegen, ignorieren.
-        */
 
         if (
             p.x + p.w <
@@ -2116,7 +2803,7 @@ function handlePlatforms() {
 
 
 /* =========================================================
-   UPDATE COINS
+   COINS
 ========================================================= */
 
 function updateCoins() {
@@ -2165,12 +2852,6 @@ function updateCoins() {
             score++;
 
 
-            /*
-                Kleine Belohnung:
-                Münzen lassen den Spieler
-                minimal nach oben springen.
-            */
-
             if (
                 player.grounded
             ) {
@@ -2183,6 +2864,113 @@ function updateCoins() {
         }
 
     }
+
+}
+
+
+/* =========================================================
+   SHOOTING
+========================================================= */
+
+function enemyShoot(e) {
+
+    /*
+        Nur schießen, wenn der Spieler
+        nicht völlig außerhalb der Nähe ist.
+    */
+
+    const distance =
+        Math.abs(
+            player.x - e.x
+        );
+
+
+    if (
+        distance > 900
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Richtung zum Spieler.
+    */
+
+    const direction =
+        player.x <
+        e.x
+            ? -1
+            : 1;
+
+
+    /*
+        Leicht nach oben/unten
+        auf den Spieler zielen.
+    */
+
+    const startX =
+        e.x +
+        e.w / 2;
+
+
+    const startY =
+        e.y +
+        e.h / 2;
+
+
+    const targetX =
+        player.x +
+        player.w / 2;
+
+
+    const targetY =
+        player.y +
+        player.h / 2;
+
+
+    const dx =
+        targetX -
+        startX;
+
+
+    const dy =
+        targetY -
+        startY;
+
+
+    const length =
+        Math.sqrt(
+            dx * dx +
+            dy * dy
+        );
+
+
+    const speed =
+        5.5;
+
+
+    projectiles.push({
+
+        x:
+            startX,
+
+        y:
+            startY,
+
+        vx:
+            dx / length *
+            speed,
+
+        vy:
+            dy / length *
+            speed,
+
+        life:
+            220
+
+    });
 
 }
 
@@ -2206,34 +2994,137 @@ function updateEnemies() {
         }
 
 
-        e.x +=
-            e.vx;
-
+        /*
+            =================================================
+            NORMAL
+            =================================================
+        */
 
         if (
-            e.x < e.min ||
-            e.x > e.max
+            e.type === "normal"
         ) {
 
-            e.vx *= -1;
+            e.x +=
+                e.vx;
 
         }
 
 
         /*
-            Gegner bleibt ungefähr
-            auf seiner Plattform.
+            =================================================
+            FAST
+            =================================================
+        */
+
+        else if (
+            e.type === "fast"
+        ) {
+
+            e.x +=
+                e.vx;
+
+        }
+
+
+        /*
+            =================================================
+            BIG
+            =================================================
+        */
+
+        else if (
+            e.type === "big"
+        ) {
+
+            e.x +=
+                e.vx;
+
+        }
+
+
+        /*
+            =================================================
+            SHOOTER
+            =================================================
+        */
+
+        else if (
+            e.type === "shooter"
+        ) {
+
+            /*
+                Schütze bewegt sich
+                langsam hin und her.
+            */
+
+            e.x +=
+                Math.sin(
+                    performance.now() /
+                    1000 +
+                    e.min
+                ) *
+                0.4;
+
+
+            e.cooldown--;
+
+
+            if (
+                e.cooldown <= 0
+            ) {
+
+                enemyShoot(e);
+
+
+                e.cooldown =
+                    randomInt(
+                        100,
+                        180
+                    );
+
+            }
+
+        }
+
+
+        /*
+            Grenzen für laufende Gegner.
+        */
+
+        if (
+            e.type !== "shooter"
+        ) {
+
+            if (
+                e.x < e.min ||
+                e.x > e.max
+            ) {
+
+                e.vx *=
+                    -1;
+
+            }
+
+        }
+
+
+        /*
+            Kollision mit Spieler.
         */
 
         const enemyBox = {
 
-            x: e.x,
+            x:
+                e.x,
 
-            y: e.y,
+            y:
+                e.y,
 
-            w: e.w,
+            w:
+                e.w,
 
-            h: e.h
+            h:
+                e.h
 
         };
 
@@ -2248,7 +3139,7 @@ function updateEnemies() {
 
 
             /*
-                Gegner von oben besiegen.
+                Spieler springt auf Gegner.
             */
 
             if (
@@ -2258,7 +3149,7 @@ function updateEnemies() {
                 player.y +
                 player.h -
                 e.y <
-                25
+                30
 
             ) {
 
@@ -2270,39 +3161,21 @@ function updateEnemies() {
                     false;
 
 
-                score += 2;
+                score +=
+                    e.type === "big"
+                        ? 4
+                        : 2;
 
             }
 
 
             /*
-                Spieler getroffen.
+                Spieler wird getroffen.
             */
 
             else {
 
-                lives--;
-
-
-                player.invincible =
-                    100;
-
-
-                player.vx =
-                    -7;
-
-
-                player.vy =
-                    -8;
-
-
-                if (
-                    lives <= 0
-                ) {
-
-                    endGame();
-
-                }
+                damagePlayer();
 
             }
 
@@ -2314,24 +3187,149 @@ function updateEnemies() {
 
 
 /* =========================================================
-   UPDATE PLAYER
+   PROJECTILE UPDATE
+========================================================= */
+
+function updateProjectiles() {
+
+    for (
+        let i =
+            projectiles.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        const p =
+            projectiles[i];
+
+
+        p.x +=
+            p.vx;
+
+
+        p.y +=
+            p.vy;
+
+
+        p.life--;
+
+
+        /*
+            Treffer Spieler.
+        */
+
+        const projectileBox = {
+
+            x:
+                p.x - 7,
+
+            y:
+                p.y - 7,
+
+            w:
+                14,
+
+            h:
+                14
+
+        };
+
+
+        if (
+            collision(
+                player,
+                projectileBox
+            ) &&
+            player.invincible <= 0
+        ) {
+
+            damagePlayer();
+
+
+            projectiles.splice(
+                i,
+                1
+            );
+
+
+            continue;
+
+        }
+
+
+        /*
+            Projektil entfernen.
+        */
+
+        if (
+            p.life <= 0
+        ) {
+
+            projectiles.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   PLAYER DAMAGE
+========================================================= */
+
+function damagePlayer() {
+
+    if (
+        player.invincible > 0
+    ) {
+
+        return;
+
+    }
+
+
+    lives--;
+
+
+    player.invincible =
+        120;
+
+
+    player.vx =
+        -7;
+
+
+    player.vy =
+        -9;
+
+
+    if (
+        lives <= 0
+    ) {
+
+        endGame();
+
+    }
+
+}
+
+
+/* =========================================================
+   PLAYER UPDATE
 ========================================================= */
 
 function updatePlayer() {
-
-
-    /*
-        LINKS
-    */
 
     const movingLeft =
         keys["a"] ||
         keys["arrowleft"];
 
-
-    /*
-        RECHTS
-    */
 
     const movingRight =
         keys["d"] ||
@@ -2339,7 +3337,7 @@ function updatePlayer() {
 
 
     /*
-        Bewegung links
+        Bewegung.
     */
 
     if (
@@ -2351,11 +3349,6 @@ function updatePlayer() {
 
     }
 
-
-    /*
-        Bewegung rechts
-    */
-
     else if (
         movingRight
     ) {
@@ -2364,11 +3357,6 @@ function updatePlayer() {
             player.speed;
 
     }
-
-
-    /*
-        Keine Taste.
-    */
 
     else {
 
@@ -2379,7 +3367,7 @@ function updatePlayer() {
 
 
     /*
-        Leichtes Limit.
+        Geschwindigkeit begrenzen.
     */
 
     if (
@@ -2405,11 +3393,7 @@ function updatePlayer() {
 
 
     /*
-        SPRINGEN
-
-        W
-        Pfeil hoch
-        Leertaste
+        Springen.
     */
 
     const jumping =
@@ -2434,7 +3418,7 @@ function updatePlayer() {
 
 
     /*
-        Schwerkraft
+        Gravity.
     */
 
     player.vy +=
@@ -2442,7 +3426,7 @@ function updatePlayer() {
 
 
     /*
-        Position
+        Position.
     */
 
     player.x +=
@@ -2454,7 +3438,7 @@ function updatePlayer() {
 
 
     /*
-        Welt beginnt bei 0.
+        Linke Weltgrenze.
     */
 
     if (
@@ -2475,7 +3459,7 @@ function updatePlayer() {
 
 
     /*
-        Münzen.
+        Coins.
     */
 
     updateCoins();
@@ -2489,7 +3473,14 @@ function updatePlayer() {
 
 
     /*
-        Unverwundbarkeit.
+        Projektile.
+    */
+
+    updateProjectiles();
+
+
+    /*
+        Invincibility.
     */
 
     if (
@@ -2502,7 +3493,7 @@ function updatePlayer() {
 
 
     /*
-        Spieler fällt.
+        Fall.
     */
 
     if (
@@ -2522,11 +3513,6 @@ function updatePlayer() {
         }
 
         else {
-
-            /*
-                Respawn auf einer
-                sicheren Position.
-            */
 
             player.x =
                 Math.max(
@@ -2575,10 +3561,6 @@ function updateCamera() {
         ) * 0.08;
 
 
-    /*
-        Kamera darf nicht negativ sein.
-    */
-
     cameraX =
         Math.max(
             0,
@@ -2596,7 +3578,7 @@ function updateCamera() {
 
 
 /* =========================================================
-   UPDATE UI
+   UI
 ========================================================= */
 
 function updateUI() {
@@ -2629,7 +3611,8 @@ function updateUI() {
 
     const meters =
         Math.floor(
-            distanceTravelled / 10
+            distanceTravelled /
+            10
         );
 
 
@@ -2656,13 +3639,11 @@ function endGame() {
         true;
 
 
-    const message =
-        document.getElementById(
+    document
+        .getElementById(
             "message"
-        );
-
-
-    message.style.display =
+        )
+        .style.display =
         "flex";
 
 
@@ -2671,7 +3652,6 @@ function endGame() {
             "messageTitle"
         )
         .innerText =
-
         "💀 GAME OVER";
 
 
@@ -2683,7 +3663,8 @@ function endGame() {
 
         "Du bist " +
         Math.floor(
-            distanceTravelled / 10
+            distanceTravelled /
+            10
         ) +
         " Meter weit gekommen und hast " +
         score +
@@ -2697,10 +3678,6 @@ function endGame() {
 ========================================================= */
 
 function restart() {
-
-    /*
-        Spieler
-    */
 
     player.x =
         150;
@@ -2726,10 +3703,6 @@ function restart() {
         0;
 
 
-    /*
-        Werte
-    */
-
     score =
         0;
 
@@ -2750,10 +3723,6 @@ function restart() {
         false;
 
 
-    /*
-        Welt löschen
-    */
-
     platforms.length =
         0;
 
@@ -2766,8 +3735,12 @@ function restart() {
         0;
 
 
+    projectiles.length =
+        0;
+
+
     /*
-        Welt neu aufbauen
+        Startwelt.
     */
 
     addPlatform(
@@ -2813,7 +3786,8 @@ function restart() {
         600,
         460,
         450,
-        900
+        900,
+        "normal"
     );
 
 
@@ -2821,23 +3795,11 @@ function restart() {
         1000;
 
 
-    /*
-        Neue Welt generieren.
-    */
-
     generateWorld();
 
 
-    /*
-        Keys leeren.
-    */
-
     keys = {};
 
-
-    /*
-        Game-Over Fenster schließen.
-    */
 
     document
         .getElementById(
@@ -2846,10 +3808,6 @@ function restart() {
         .style.display =
         "none";
 
-
-    /*
-        Canvas fokussieren.
-    */
 
     canvas.focus();
 
@@ -2860,25 +3818,18 @@ function restart() {
 
 
 /* =========================================================
-   CLEAN OLD OBJECTS
+   CLEANUP
 ========================================================= */
 
 function cleanupWorld() {
 
-    /*
-        Objekte weit hinter der Kamera
-        können entfernt werden.
-
-        Dadurch bleibt das Spiel auch nach
-        langer Spielzeit performant.
-    */
-
     const cleanupBefore =
-        cameraX - 1500;
+        cameraX -
+        1500;
 
 
     /*
-        Plattformen
+        Plattformen.
     */
 
     for (
@@ -2895,10 +3846,6 @@ function cleanupWorld() {
             platforms[i].w <
             cleanupBefore
         ) {
-
-            /*
-                Startplattform nicht löschen.
-            */
 
             if (
                 platforms[i].x >
@@ -2918,7 +3865,7 @@ function cleanupWorld() {
 
 
     /*
-        Coins
+        Coins.
     */
 
     for (
@@ -2946,7 +3893,7 @@ function cleanupWorld() {
 
 
     /*
-        Gegner
+        Gegner.
     */
 
     for (
@@ -2964,6 +3911,34 @@ function cleanupWorld() {
         ) {
 
             enemies.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+
+
+    /*
+        Projektile.
+    */
+
+    for (
+        let i =
+            projectiles.length - 1;
+
+        i >= 0;
+
+        i--
+    ) {
+
+        if (
+            projectiles[i].x <
+            cleanupBefore
+        ) {
+
+            projectiles.splice(
                 i,
                 1
             );
@@ -2991,7 +3966,7 @@ function update(dt) {
 
 
     /*
-        Neue Welt erzeugen.
+        Welt weiterbauen.
     */
 
     generateWorld();
@@ -3012,7 +3987,7 @@ function update(dt) {
 
 
     /*
-        Alte Objekte löschen.
+        Alte Objekte entfernen.
     */
 
     cleanupWorld();
@@ -3041,38 +4016,26 @@ function draw(time) {
     );
 
 
-    /*
-        Hintergrund.
-    */
-
     drawBackground();
 
 
-    /*
-        Plattformen.
-    */
-
     drawPlatforms();
 
-
-    /*
-        Coins.
-    */
 
     drawCoins(
         time
     );
 
 
-    /*
-        Gegner.
-    */
-
     drawEnemies();
 
 
+    drawProjectiles();
+
+
     /*
-        Spieler.
+        Spieler blinkt während
+        der Unverwundbarkeit.
     */
 
     if (
