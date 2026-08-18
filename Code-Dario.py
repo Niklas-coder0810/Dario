@@ -25,6 +25,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
 game = r"""
 <!DOCTYPE html>
 <html lang="de">
@@ -63,6 +64,7 @@ canvas {
     width: 100%;
     height: 100%;
     display: block;
+    outline: none;
 }
 
 #ui {
@@ -77,6 +79,7 @@ canvas {
     font-weight: bold;
     text-shadow: 0 3px 5px #000;
     pointer-events: none;
+    z-index: 3;
 }
 
 #title {
@@ -88,6 +91,8 @@ canvas {
     font-size: 22px;
     font-weight: bold;
     text-shadow: 0 3px 10px #000;
+    pointer-events: none;
+    z-index: 3;
 }
 
 #message {
@@ -138,6 +143,23 @@ button:hover {
     opacity: .8;
     font-size: 14px;
     text-shadow: 0 2px 4px black;
+    pointer-events: none;
+    z-index: 3;
+}
+
+#focusMessage {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    color: white;
+    font-size: 14px;
+    background: rgba(0,0,0,.35);
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-shadow: 0 2px 4px black;
+    pointer-events: none;
+    z-index: 3;
+    transition: opacity .4s;
 }
 </style>
 </head>
@@ -145,601 +167,1915 @@ button:hover {
 <body>
 
 <div id="game">
-    <canvas id="canvas"></canvas>
 
-    <div id="title">🌙 PIXEL ADVENTURE</div>
+    <canvas id="canvas" tabindex="0"></canvas>
+
+    <div id="title">
+        🌙 PIXEL ADVENTURE
+    </div>
 
     <div id="ui">
-        <div id="stats">❤️ ❤️ ❤️ &nbsp;&nbsp; 🪙 0</div>
-        <div id="level">LEVEL 1</div>
+        <div id="stats">
+            ❤️ ❤️ ❤️ &nbsp;&nbsp; 🪙 0
+        </div>
+
+        <div id="level">
+            LEVEL 1
+        </div>
     </div>
 
     <div id="controls">
-        WASD = Bewegen &nbsp; | &nbsp; W = Springen
+        WASD / Pfeiltasten = Bewegen &nbsp; | &nbsp; W / ↑ / Leertaste = Springen
+    </div>
+
+    <div id="focusMessage">
+        🎮 Klicke ins Spiel und los geht's!
     </div>
 
     <div id="message">
-        <h1 id="messageTitle">GAME OVER</h1>
-        <p id="messageText">Versuche es noch einmal!</p>
-        <button onclick="restart()">🔄 Neustart</button>
+
+        <h1 id="messageTitle">
+            GAME OVER
+        </h1>
+
+        <p id="messageText">
+            Versuche es noch einmal!
+        </p>
+
+        <button onclick="restart()">
+            🔄 Neustart
+        </button>
+
     </div>
+
 </div>
 
+
 <script>
+
+/* =========================================================
+   CANVAS
+========================================================= */
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-let W, H;
+let W;
+let H;
 
 function resize() {
+
     W = canvas.width = window.innerWidth;
     H = canvas.height = window.innerHeight;
+
 }
 
 window.addEventListener("resize", resize);
+
 resize();
 
 
-// ==============================
-// GAME STATE
-// ==============================
+/* =========================================================
+   GAME STATE
+========================================================= */
 
 let keys = {};
+
 let cameraX = 0;
+
 let score = 0;
+
 let lives = 3;
+
 let gameOver = false;
+
 let won = false;
+
 let lastTime = 0;
 
 const worldWidth = 5000;
 
+
+/* =========================================================
+   PLAYER
+========================================================= */
+
 const player = {
+
     x: 150,
+
     y: 300,
+
     w: 38,
+
     h: 52,
+
     vx: 0,
+
     vy: 0,
+
     speed: 5,
+
     jump: -14,
+
     grounded: false,
+
     color: "#ff4d6d",
+
     invincible: 0
+
 };
 
 
-// ==============================
-// INPUT
-// ==============================
+/* =========================================================
+   INPUT
+========================================================= */
 
-window.addEventListener("keydown", e => {
-    keys[e.key.toLowerCase()] = true;
+/*
+    WICHTIG:
 
-    if (
-        ["w", "a", "s", "d", " "].includes(e.key.toLowerCase())
-    ) {
+    Streamlit läuft das Spiel in einem iframe.
+    Deshalb bekommt das Canvas hier selbst den Tastatur-Fokus.
+
+    Unterstützt werden:
+
+    A
+    D
+    W
+    Pfeil links
+    Pfeil rechts
+    Pfeil oben
+    Pfeil unten
+    Leertaste
+*/
+
+
+const movementKeys = [
+
+    "a",
+    "d",
+    "w",
+
+    "arrowleft",
+    "arrowright",
+    "arrowup",
+    "arrowdown",
+
+    " "
+
+];
+
+
+/*
+    Wenn der Benutzer irgendwo auf das Spiel klickt,
+    bekommt das Canvas den Fokus.
+*/
+
+canvas.addEventListener("click", function() {
+
+    canvas.focus();
+
+    const focusMessage =
+        document.getElementById("focusMessage");
+
+    focusMessage.style.opacity = "0";
+
+});
+
+
+/*
+    Wenn das Canvas fokussiert wird.
+*/
+
+canvas.addEventListener("focus", function() {
+
+    const focusMessage =
+        document.getElementById("focusMessage");
+
+    focusMessage.style.opacity = "0";
+
+});
+
+
+/*
+    KEYDOWN
+
+    Wir hören direkt auf dem Canvas.
+*/
+
+canvas.addEventListener("keydown", function(e) {
+
+    const key = e.key.toLowerCase();
+
+    if (movementKeys.includes(key)) {
+
+        keys[key] = true;
+
         e.preventDefault();
+
     }
-});
 
-window.addEventListener("keyup", e => {
-    keys[e.key.toLowerCase()] = false;
 });
 
 
-// ==============================
-// LEVEL
-// ==============================
+/*
+    KEYUP
+*/
+
+canvas.addEventListener("keyup", function(e) {
+
+    const key = e.key.toLowerCase();
+
+    if (movementKeys.includes(key)) {
+
+        keys[key] = false;
+
+        e.preventDefault();
+
+    }
+
+});
+
+
+/*
+    Zusätzlich globale Tastatur-Events.
+
+    Dadurch funktioniert die Steuerung auch dann,
+    wenn der Browser den Fokus kurz anders behandelt.
+*/
+
+window.addEventListener("keydown", function(e) {
+
+    const key = e.key.toLowerCase();
+
+    if (movementKeys.includes(key)) {
+
+        keys[key] = true;
+
+        e.preventDefault();
+
+    }
+
+});
+
+
+window.addEventListener("keyup", function(e) {
+
+    const key = e.key.toLowerCase();
+
+    if (movementKeys.includes(key)) {
+
+        keys[key] = false;
+
+        e.preventDefault();
+
+    }
+
+});
+
+
+/*
+    Canvas direkt beim Start fokussieren.
+*/
+
+setTimeout(function() {
+
+    canvas.focus();
+
+}, 300);
+
+
+/* =========================================================
+   LEVEL
+========================================================= */
 
 const platforms = [
-    {x: 0,    y: 500, w: 800, h: 100},
-    {x: 900,  y: 450, w: 450, h: 150},
-    {x: 1450, y: 520, w: 600, h: 80},
-    {x: 2150, y: 430, w: 500, h: 170},
-    {x: 2750, y: 500, w: 650, h: 100},
-    {x: 3500, y: 420, w: 500, h: 180},
-    {x: 4150, y: 500, w: 850, h: 100}
+
+    {
+        x: 0,
+        y: 500,
+        w: 800,
+        h: 100
+    },
+
+    {
+        x: 900,
+        y: 450,
+        w: 450,
+        h: 150
+    },
+
+    {
+        x: 1450,
+        y: 520,
+        w: 600,
+        h: 80
+    },
+
+    {
+        x: 2150,
+        y: 430,
+        w: 500,
+        h: 170
+    },
+
+    {
+        x: 2750,
+        y: 500,
+        w: 650,
+        h: 100
+    },
+
+    {
+        x: 3500,
+        y: 420,
+        w: 500,
+        h: 180
+    },
+
+    {
+        x: 4150,
+        y: 500,
+        w: 850,
+        h: 100
+    }
+
 ];
+
+
+/* =========================================================
+   COINS
+========================================================= */
 
 const coins = [
-    {x: 300,  y: 430, collected:false},
-    {x: 600,  y: 390, collected:false},
-    {x: 1000, y: 380, collected:false},
-    {x: 1200, y: 330, collected:false},
-    {x: 1600, y: 450, collected:false},
-    {x: 1850, y: 450, collected:false},
-    {x: 2300, y: 360, collected:false},
-    {x: 2500, y: 320, collected:false},
-    {x: 2950, y: 430, collected:false},
-    {x: 3250, y: 430, collected:false},
-    {x: 3650, y: 350, collected:false},
-    {x: 3900, y: 350, collected:false},
-    {x: 4350, y: 430, collected:false},
-    {x: 4650, y: 430, collected:false}
+
+    {
+        x: 300,
+        y: 430,
+        collected: false
+    },
+
+    {
+        x: 600,
+        y: 390,
+        collected: false
+    },
+
+    {
+        x: 1000,
+        y: 380,
+        collected: false
+    },
+
+    {
+        x: 1200,
+        y: 330,
+        collected: false
+    },
+
+    {
+        x: 1600,
+        y: 450,
+        collected: false
+    },
+
+    {
+        x: 1850,
+        y: 450,
+        collected: false
+    },
+
+    {
+        x: 2300,
+        y: 360,
+        collected: false
+    },
+
+    {
+        x: 2500,
+        y: 320,
+        collected: false
+    },
+
+    {
+        x: 2950,
+        y: 430,
+        collected: false
+    },
+
+    {
+        x: 3250,
+        y: 430,
+        collected: false
+    },
+
+    {
+        x: 3650,
+        y: 350,
+        collected: false
+    },
+
+    {
+        x: 3900,
+        y: 350,
+        collected: false
+    },
+
+    {
+        x: 4350,
+        y: 430,
+        collected: false
+    },
+
+    {
+        x: 4650,
+        y: 430,
+        collected: false
+    }
+
 ];
+
+
+/* =========================================================
+   ENEMIES
+========================================================= */
 
 const enemies = [
-    {x: 550, y: 450, w:40, h:40, vx:1.5, min:450, max:750},
-    {x: 1100, y: 400, w:40, h:40, vx:1.8, min:920, max:1300},
-    {x: 1750, y: 470, w:40, h:40, vx:1.5, min:1500, max:2000},
-    {x: 2350, y: 380, w:40, h:40, vx:2, min:2180, max:2600},
-    {x: 3100, y: 450, w:40, h:40, vx:1.7, min:2800, max:3350},
-    {x: 3700, y: 370, w:40, h:40, vx:2, min:3550, max:3950}
+
+    {
+        x: 550,
+        y: 450,
+        w: 40,
+        h: 40,
+        vx: 1.5,
+        min: 450,
+        max: 750
+    },
+
+    {
+        x: 1100,
+        y: 400,
+        w: 40,
+        h: 40,
+        vx: 1.8,
+        min: 920,
+        max: 1300
+    },
+
+    {
+        x: 1750,
+        y: 470,
+        w: 40,
+        h: 40,
+        vx: 1.5,
+        min: 1500,
+        max: 2000
+    },
+
+    {
+        x: 2350,
+        y: 380,
+        w: 40,
+        h: 40,
+        vx: 2,
+        min: 2180,
+        max: 2600
+    },
+
+    {
+        x: 3100,
+        y: 450,
+        w: 40,
+        h: 40,
+        vx: 1.7,
+        min: 2800,
+        max: 3350
+    },
+
+    {
+        x: 3700,
+        y: 370,
+        w: 40,
+        h: 40,
+        vx: 2,
+        min: 3550,
+        max: 3950
+    }
+
 ];
 
 
-// ==============================
-// BACKGROUND
-// ==============================
+/* =========================================================
+   BACKGROUND
+========================================================= */
 
 function drawSky() {
-    const gradient = ctx.createLinearGradient(0, 0, 0, H);
 
-    gradient.addColorStop(0, "#070b2f");
-    gradient.addColorStop(.45, "#18215f");
-    gradient.addColorStop(1, "#65b6c7");
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            H
+        );
+
+    gradient.addColorStop(
+        0,
+        "#070b2f"
+    );
+
+    gradient.addColorStop(
+        .45,
+        "#18215f"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#65b6c7"
+    );
 
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, W, H);
 
-    // Moon
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    /* Mond */
+
     ctx.beginPath();
-    ctx.arc(W - 130, 100, 55, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff3b0";
+
+    ctx.arc(
+        W - 130,
+        100,
+        55,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fillStyle =
+        "#fff3b0";
+
     ctx.shadowBlur = 35;
-    ctx.shadowColor = "#fff3b0";
+
+    ctx.shadowColor =
+        "#fff3b0";
+
     ctx.fill();
+
     ctx.shadowBlur = 0;
 
-    // Stars
-    for (let i = 0; i < 80; i++) {
-        const x = (i * 157) % W;
-        const y = (i * 71) % (H * .55);
 
-        ctx.fillStyle = "rgba(255,255,255,.8)";
-        ctx.fillRect(x, y, 2, 2);
+    /* Sterne */
+
+    for (
+        let i = 0;
+        i < 80;
+        i++
+    ) {
+
+        const x =
+            (i * 157) % W;
+
+        const y =
+            (i * 71) %
+            (H * .55);
+
+        ctx.fillStyle =
+            "rgba(255,255,255,.8)";
+
+        ctx.fillRect(
+            x,
+            y,
+            2,
+            2
+        );
+
     }
+
 }
 
 
-function drawMountains(offset, color, height) {
+/* =========================================================
+   MOUNTAINS
+========================================================= */
+
+function drawMountains(
+    offset,
+    color,
+    height
+) {
+
     ctx.fillStyle = color;
 
     ctx.beginPath();
-    ctx.moveTo(0, H);
 
-    for (let x = -100; x <= W + 200; x += 180) {
-        const px = x - (cameraX * offset) % 180;
+    ctx.moveTo(
+        0,
+        H
+    );
 
-        ctx.lineTo(px, H - height);
-        ctx.lineTo(px + 90, H - height - 130);
-        ctx.lineTo(px + 180, H - height);
+    for (
+        let x = -100;
+        x <= W + 200;
+        x += 180
+    ) {
+
+        const px =
+            x -
+            (cameraX * offset) % 180;
+
+        ctx.lineTo(
+            px,
+            H - height
+        );
+
+        ctx.lineTo(
+            px + 90,
+            H - height - 130
+        );
+
+        ctx.lineTo(
+            px + 180,
+            H - height
+        );
+
     }
 
-    ctx.lineTo(W, H);
+    ctx.lineTo(
+        W,
+        H
+    );
+
     ctx.closePath();
+
     ctx.fill();
+
 }
 
+
+/* =========================================================
+   BACKGROUND
+========================================================= */
 
 function drawBackground() {
+
     drawSky();
 
-    drawMountains(.08, "#11173d", 220);
-    drawMountains(.16, "#172550", 170);
-    drawMountains(.25, "#213c63", 130);
+    drawMountains(
+        .08,
+        "#11173d",
+        220
+    );
 
-    // Fog
-    const fog = ctx.createLinearGradient(0, H*.55, 0, H);
-    fog.addColorStop(0, "rgba(255,255,255,0)");
-    fog.addColorStop(1, "rgba(190,240,240,.25)");
+    drawMountains(
+        .16,
+        "#172550",
+        170
+    );
+
+    drawMountains(
+        .25,
+        "#213c63",
+        130
+    );
+
+
+    /* Nebel */
+
+    const fog =
+        ctx.createLinearGradient(
+            0,
+            H * .55,
+            0,
+            H
+        );
+
+    fog.addColorStop(
+        0,
+        "rgba(255,255,255,0)"
+    );
+
+    fog.addColorStop(
+        1,
+        "rgba(190,240,240,.25)"
+    );
 
     ctx.fillStyle = fog;
-    ctx.fillRect(0, H*.5, W, H*.5);
+
+    ctx.fillRect(
+        0,
+        H * .5,
+        W,
+        H * .5
+    );
+
 }
 
 
-// ==============================
-// DRAW PLAYER
-// ==============================
+/* =========================================================
+   PLAYER DRAW
+========================================================= */
 
 function drawPlayer() {
-    const x = player.x - cameraX;
-    const y = player.y;
 
-    // shadow
-    ctx.fillStyle = "rgba(0,0,0,.3)";
+    const x =
+        player.x - cameraX;
+
+    const y =
+        player.y;
+
+
+    /* Schatten */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.3)";
+
     ctx.beginPath();
-    ctx.ellipse(x + 19, y + 53, 24, 7, 0, 0, Math.PI*2);
+
+    ctx.ellipse(
+        x + 19,
+        y + 53,
+        24,
+        7,
+        0,
+        0,
+        Math.PI * 2
+    );
+
     ctx.fill();
 
-    // body
-    ctx.fillStyle = player.color;
-    ctx.fillRect(x + 4, y + 15, 30, 35);
 
-    // head
-    ctx.fillStyle = "#ffd1b3";
-    ctx.fillRect(x + 7, y, 24, 23);
+    /* Körper */
 
-    // hair
-    ctx.fillStyle = "#351c46";
-    ctx.fillRect(x + 5, y - 3, 28, 8);
+    ctx.fillStyle =
+        player.color;
 
-    // eyes
-    ctx.fillStyle = "#111";
-    ctx.fillRect(x + 13, y + 9, 3, 4);
-    ctx.fillRect(x + 23, y + 9, 3, 4);
+    ctx.fillRect(
+        x + 4,
+        y + 15,
+        30,
+        35
+    );
 
-    // legs
-    ctx.fillStyle = "#292b63";
-    ctx.fillRect(x + 6, y + 44, 10, 10);
-    ctx.fillRect(x + 23, y + 44, 10, 10);
+
+    /* Kopf */
+
+    ctx.fillStyle =
+        "#ffd1b3";
+
+    ctx.fillRect(
+        x + 7,
+        y,
+        24,
+        23
+    );
+
+
+    /* Haare */
+
+    ctx.fillStyle =
+        "#351c46";
+
+    ctx.fillRect(
+        x + 5,
+        y - 3,
+        28,
+        8
+    );
+
+
+    /* Augen */
+
+    ctx.fillStyle =
+        "#111";
+
+    ctx.fillRect(
+        x + 13,
+        y + 9,
+        3,
+        4
+    );
+
+    ctx.fillRect(
+        x + 23,
+        y + 9,
+        3,
+        4
+    );
+
+
+    /* Beine */
+
+    ctx.fillStyle =
+        "#292b63";
+
+    ctx.fillRect(
+        x + 6,
+        y + 44,
+        10,
+        10
+    );
+
+    ctx.fillRect(
+        x + 23,
+        y + 44,
+        10,
+        10
+    );
+
 }
 
 
-// ==============================
-// DRAW WORLD
-// ==============================
+/* =========================================================
+   PLATFORMS
+========================================================= */
 
 function drawPlatforms() {
+
     for (const p of platforms) {
-        const x = p.x - cameraX;
 
-        if (x + p.w < 0 || x > W) continue;
+        const x =
+            p.x - cameraX;
 
-        // dirt
-        ctx.fillStyle = "#49352a";
-        ctx.fillRect(x, p.y, p.w, p.h);
 
-        // grass
-        ctx.fillStyle = "#43b047";
-        ctx.fillRect(x, p.y, p.w, 14);
+        if (
+            x + p.w < 0 ||
+            x > W
+        ) {
 
-        ctx.fillStyle = "#75d66c";
-        ctx.fillRect(x, p.y, p.w, 5);
+            continue;
 
-        // little rocks
-        ctx.fillStyle = "#70503b";
-
-        for (let i = 20; i < p.w; i += 80) {
-            ctx.fillRect(x + i, p.y + 40, 12, 8);
         }
+
+
+        /* Erde */
+
+        ctx.fillStyle =
+            "#49352a";
+
+        ctx.fillRect(
+            x,
+            p.y,
+            p.w,
+            p.h
+        );
+
+
+        /* Gras */
+
+        ctx.fillStyle =
+            "#43b047";
+
+        ctx.fillRect(
+            x,
+            p.y,
+            p.w,
+            14
+        );
+
+
+        /* helles Gras */
+
+        ctx.fillStyle =
+            "#75d66c";
+
+        ctx.fillRect(
+            x,
+            p.y,
+            p.w,
+            5
+        );
+
+
+        /* Steine */
+
+        ctx.fillStyle =
+            "#70503b";
+
+        for (
+            let i = 20;
+            i < p.w;
+            i += 80
+        ) {
+
+            ctx.fillRect(
+                x + i,
+                p.y + 40,
+                12,
+                8
+            );
+
+        }
+
     }
+
 }
 
 
+/* =========================================================
+   COINS
+========================================================= */
+
 function drawCoins(time) {
+
     for (const c of coins) {
-        if (c.collected) continue;
 
-        const x = c.x - cameraX;
+        if (c.collected) {
 
-        if (x < -50 || x > W + 50) continue;
+            continue;
 
-        const bob = Math.sin(time / 200 + c.x) * 5;
+        }
+
+
+        const x =
+            c.x - cameraX;
+
+
+        if (
+            x < -50 ||
+            x > W + 50
+        ) {
+
+            continue;
+
+        }
+
+
+        const bob =
+            Math.sin(
+                time / 200 + c.x
+            ) * 5;
+
 
         ctx.beginPath();
-        ctx.arc(x, c.y + bob, 12, 0, Math.PI * 2);
 
-        ctx.fillStyle = "#ffd43b";
+        ctx.arc(
+            x,
+            c.y + bob,
+            12,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle =
+            "#ffd43b";
+
         ctx.shadowBlur = 15;
-        ctx.shadowColor = "#ffd43b";
+
+        ctx.shadowColor =
+            "#ffd43b";
+
         ctx.fill();
 
         ctx.shadowBlur = 0;
 
-        ctx.fillStyle = "#fff1a3";
-        ctx.fillRect(x - 3, c.y - 7 + bob, 3, 10);
+
+        ctx.fillStyle =
+            "#fff1a3";
+
+        ctx.fillRect(
+            x - 3,
+            c.y - 7 + bob,
+            3,
+            10
+        );
+
     }
+
 }
 
+
+/* =========================================================
+   ENEMIES
+========================================================= */
 
 function drawEnemies() {
+
     for (const e of enemies) {
-        const x = e.x - cameraX;
 
-        ctx.fillStyle = "#7c3aed";
-        ctx.fillRect(x, e.y, e.w, e.h);
+        const x =
+            e.x - cameraX;
 
-        ctx.fillStyle = "#a855f7";
-        ctx.fillRect(x + 5, e.y + 5, 30, 15);
 
-        // eyes
-        ctx.fillStyle = "white";
-        ctx.fillRect(x + 8, e.y + 13, 8, 8);
-        ctx.fillRect(x + 24, e.y + 13, 8, 8);
+        /* Körper */
 
-        ctx.fillStyle = "#111";
-        ctx.fillRect(x + 11, e.y + 16, 4, 5);
-        ctx.fillRect(x + 27, e.y + 16, 4, 5);
+        ctx.fillStyle =
+            "#7c3aed";
+
+        ctx.fillRect(
+            x,
+            e.y,
+            e.w,
+            e.h
+        );
+
+
+        /* Kopf */
+
+        ctx.fillStyle =
+            "#a855f7";
+
+        ctx.fillRect(
+            x + 5,
+            e.y + 5,
+            30,
+            15
+        );
+
+
+        /* Augen */
+
+        ctx.fillStyle =
+            "white";
+
+        ctx.fillRect(
+            x + 8,
+            e.y + 13,
+            8,
+            8
+        );
+
+        ctx.fillRect(
+            x + 24,
+            e.y + 13,
+            8,
+            8
+        );
+
+
+        /* Pupillen */
+
+        ctx.fillStyle =
+            "#111";
+
+        ctx.fillRect(
+            x + 11,
+            e.y + 16,
+            4,
+            5
+        );
+
+        ctx.fillRect(
+            x + 27,
+            e.y + 16,
+            4,
+            5
+        );
+
     }
+
 }
 
+
+/* =========================================================
+   GOAL
+========================================================= */
 
 function drawGoal() {
-    const x = 4800 - cameraX;
 
-    ctx.fillStyle = "#38220f";
-    ctx.fillRect(x, 350, 15, 150);
+    const x =
+        4800 - cameraX;
 
-    ctx.fillStyle = "#ffcf33";
+
+    /* Fahnenstange */
+
+    ctx.fillStyle =
+        "#38220f";
+
+    ctx.fillRect(
+        x,
+        350,
+        15,
+        150
+    );
+
+
+    /* Flagge */
+
+    ctx.fillStyle =
+        "#ffcf33";
 
     ctx.beginPath();
-    ctx.moveTo(x + 15, 350);
-    ctx.lineTo(x + 100, 380);
-    ctx.lineTo(x + 15, 410);
+
+    ctx.moveTo(
+        x + 15,
+        350
+    );
+
+    ctx.lineTo(
+        x + 100,
+        380
+    );
+
+    ctx.lineTo(
+        x + 15,
+        410
+    );
+
     ctx.closePath();
+
     ctx.fill();
 
-    ctx.fillStyle = "white";
-    ctx.font = "bold 18px Arial";
-    ctx.fillText("ZIEL", x + 25, 390);
+
+    /* Schrift */
+
+    ctx.fillStyle =
+        "white";
+
+    ctx.font =
+        "bold 18px Arial";
+
+    ctx.fillText(
+        "ZIEL",
+        x + 25,
+        390
+    );
+
 }
 
 
-// ==============================
-// COLLISION
-// ==============================
+/* =========================================================
+   COLLISION
+========================================================= */
 
 function collision(a, b) {
+
     return (
-        a.x < b.x + b.w &&
-        a.x + a.w > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.h > b.y
+
+        a.x <
+        b.x + b.w &&
+
+        a.x + a.w >
+        b.x &&
+
+        a.y <
+        b.y + b.h &&
+
+        a.y + a.h >
+        b.y
+
     );
+
 }
 
 
-// ==============================
-// UPDATE
-// ==============================
+/* =========================================================
+   UPDATE
+========================================================= */
 
 function update(dt) {
 
-    if (gameOver || won) return;
+    if (
+        gameOver ||
+        won
+    ) {
 
-    // movement
-    if (keys["a"]) {
-        player.vx = -player.speed;
-    } else if (keys["d"]) {
-        player.vx = player.speed;
-    } else {
-        player.vx *= .8;
+        return;
+
     }
 
-    // jump
-    if ((keys["w"] || keys[" "]) && player.grounded) {
-        player.vy = player.jump;
-        player.grounded = false;
+
+    /* =====================================================
+       MOVEMENT
+    ===================================================== */
+
+
+    /*
+        LINKS:
+
+        A
+        Pfeil links
+    */
+
+    const movingLeft =
+        keys["a"] ||
+        keys["arrowleft"];
+
+
+    /*
+        RECHTS:
+
+        D
+        Pfeil rechts
+    */
+
+    const movingRight =
+        keys["d"] ||
+        keys["arrowright"];
+
+
+    /*
+        Wenn links gedrückt:
+    */
+
+    if (movingLeft) {
+
+        player.vx =
+            -player.speed;
+
     }
+
+
+    /*
+        Wenn rechts gedrückt:
+    */
+
+    else if (movingRight) {
+
+        player.vx =
+            player.speed;
+
+    }
+
+
+    /*
+        Keine Richtung:
+
+        Spieler wird langsamer.
+    */
+
+    else {
+
+        player.vx *= 0.8;
+
+    }
+
+
+    /* =====================================================
+       JUMP
+    ===================================================== */
+
+
+    const jumping =
+        keys["w"] ||
+        keys["arrowup"] ||
+        keys[" "];
+
+
+    if (
+        jumping &&
+        player.grounded
+    ) {
+
+        player.vy =
+            player.jump;
+
+        player.grounded =
+            false;
+
+    }
+
+
+    /* =====================================================
+       GRAVITY
+    ===================================================== */
 
     player.vy += 0.65;
 
-    player.x += player.vx;
-    player.y += player.vy;
 
-    if (player.x < 0) player.x = 0;
-    if (player.x > worldWidth - player.w) {
-        player.x = worldWidth - player.w;
+    /* =====================================================
+       PLAYER POSITION
+    ===================================================== */
+
+    player.x +=
+        player.vx;
+
+    player.y +=
+        player.vy;
+
+
+    /* Weltgrenzen */
+
+    if (
+        player.x < 0
+    ) {
+
+        player.x = 0;
+
     }
 
-    player.grounded = false;
 
-    // platform collision
+    if (
+        player.x >
+        worldWidth - player.w
+    ) {
+
+        player.x =
+            worldWidth - player.w;
+
+    }
+
+
+    player.grounded =
+        false;
+
+
+    /* =====================================================
+       PLATFORM COLLISION
+    ===================================================== */
+
     for (const p of platforms) {
 
         const wasAbove =
-            player.y + player.h - player.vy <= p.y;
+            player.y +
+            player.h -
+            player.vy <=
+            p.y;
+
 
         if (
-            player.x + player.w > p.x &&
-            player.x < p.x + p.w &&
-            player.y + player.h >= p.y &&
-            player.y + player.h <= p.y + 30 &&
+
+            player.x +
+            player.w >
+            p.x &&
+
+            player.x <
+            p.x + p.w &&
+
+            player.y +
+            player.h >=
+            p.y &&
+
+            player.y +
+            player.h <=
+            p.y + 30 &&
+
             wasAbove &&
+
             player.vy >= 0
+
         ) {
-            player.y = p.y - player.h;
-            player.vy = 0;
-            player.grounded = true;
+
+            player.y =
+                p.y -
+                player.h;
+
+            player.vy =
+                0;
+
+            player.grounded =
+                true;
+
         }
+
     }
 
-    // coins
+
+    /* =====================================================
+       COINS
+    ===================================================== */
+
     for (const c of coins) {
 
-        if (c.collected) continue;
+        if (
+            c.collected
+        ) {
+
+            continue;
+
+        }
+
 
         const coinBox = {
-            x: c.x - 12,
-            y: c.y - 12,
-            w: 24,
-            h: 24
+
+            x:
+                c.x - 12,
+
+            y:
+                c.y - 12,
+
+            w:
+                24,
+
+            h:
+                24
+
         };
 
-        if (collision(player, coinBox)) {
-            c.collected = true;
+
+        if (
+            collision(
+                player,
+                coinBox
+            )
+        ) {
+
+            c.collected =
+                true;
+
             score++;
+
         }
+
     }
 
-    // enemies
+
+    /* =====================================================
+       ENEMIES
+    ===================================================== */
+
     for (const e of enemies) {
 
-        e.x += e.vx;
+        e.x +=
+            e.vx;
 
-        if (e.x < e.min || e.x > e.max) {
+
+        if (
+            e.x < e.min ||
+            e.x > e.max
+        ) {
+
             e.vx *= -1;
+
         }
 
-        if (collision(player, e) && player.invincible <= 0) {
 
-            // stomp enemy
-            if (player.vy > 0 && player.y + player.h - e.y < 25) {
+        if (
+            collision(
+                player,
+                e
+            ) &&
+            player.invincible <= 0
+        ) {
 
-                player.vy = -9;
-                e.x = -1000;
+
+            /*
+                Gegner von oben treffen
+            */
+
+            if (
+                player.vy > 0 &&
+                player.y +
+                player.h -
+                e.y < 25
+            ) {
+
+                player.vy =
+                    -9;
+
+                /*
+                    Gegner entfernen
+                */
+
+                e.x =
+                    -1000;
 
                 score += 2;
 
-            } else {
+            }
+
+
+            /*
+                Spieler wird getroffen
+            */
+
+            else {
 
                 lives--;
-                player.invincible = 100;
 
-                player.x -= 80;
+                player.invincible =
+                    100;
 
-                if (lives <= 0) {
+                player.x -=
+                    80;
+
+
+                if (
+                    lives <= 0
+                ) {
+
                     endGame(false);
+
                 }
+
             }
+
         }
+
     }
 
-    if (player.invincible > 0) {
+
+    /* =====================================================
+       INVINCIBILITY
+    ===================================================== */
+
+    if (
+        player.invincible > 0
+    ) {
+
         player.invincible--;
+
     }
 
-    // fall
-    if (player.y > H + 150) {
+
+    /* =====================================================
+       FALL
+    ===================================================== */
+
+    if (
+        player.y >
+        H + 150
+    ) {
+
         lives--;
 
-        if (lives <= 0) {
+
+        if (
+            lives <= 0
+        ) {
+
             endGame(false);
-        } else {
-            player.x -= 150;
-            player.y = 200;
-            player.vy = 0;
+
         }
+
+
+        else {
+
+            player.x -=
+                150;
+
+            player.y =
+                200;
+
+            player.vy =
+                0;
+
+        }
+
     }
 
-    // camera
-    const targetCamera = player.x - W * .35;
 
-    cameraX += (targetCamera - cameraX) * .08;
+    /* =====================================================
+       CAMERA
+    ===================================================== */
 
-    cameraX = Math.max(0, Math.min(cameraX, worldWidth - W));
+    const targetCamera =
+        player.x -
+        W * .35;
 
-    // win
-    if (player.x > 4750) {
+
+    cameraX +=
+        (
+            targetCamera -
+            cameraX
+        ) * .08;
+
+
+    cameraX =
+        Math.max(
+            0,
+            Math.min(
+                cameraX,
+                worldWidth - W
+            )
+        );
+
+
+    /* =====================================================
+       WIN
+    ===================================================== */
+
+    if (
+        player.x > 4750
+    ) {
+
         endGame(true);
+
     }
+
 
     updateUI();
+
 }
 
 
-// ==============================
-// UI
-// ==============================
+/* =========================================================
+   UI
+========================================================= */
 
 function updateUI() {
 
     let hearts = "";
 
-    for (let i = 0; i < lives; i++) {
-        hearts += "❤️ ";
+
+    for (
+        let i = 0;
+        i < lives;
+        i++
+    ) {
+
+        hearts +=
+            "❤️ ";
+
     }
 
-    document.getElementById("stats").innerHTML =
-        hearts + "&nbsp;&nbsp; 🪙 " + score;
+
+    document.getElementById(
+        "stats"
+    ).innerHTML =
+
+        hearts +
+        "&nbsp;&nbsp; 🪙 " +
+        score;
+
 }
 
+
+/* =========================================================
+   END GAME
+========================================================= */
 
 function endGame(win) {
 
-    gameOver = true;
-    won = win;
+    gameOver =
+        true;
 
-    const message = document.getElementById("message");
+    won =
+        win;
 
-    message.style.display = "flex";
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+
+    message.style.display =
+        "flex";
+
 
     if (win) {
 
-        document.getElementById("messageTitle").innerText =
+        document.getElementById(
+            "messageTitle"
+        ).innerText =
             "🏆 LEVEL GESCHAFFT!";
 
-        document.getElementById("messageText").innerText =
-            "Du hast " + score + " Münzen gesammelt!";
 
-    } else {
+        document.getElementById(
+            "messageText"
+        ).innerText =
 
-        document.getElementById("messageTitle").innerText =
+            "Du hast " +
+            score +
+            " Münzen gesammelt!";
+
+    }
+
+
+    else {
+
+        document.getElementById(
+            "messageTitle"
+        ).innerText =
             "💀 GAME OVER";
 
-        document.getElementById("messageText").innerText =
-            "Du hast " + score + " Münzen gesammelt.";
+
+        document.getElementById(
+            "messageText"
+        ).innerText =
+
+            "Du hast " +
+            score +
+            " Münzen gesammelt.";
+
     }
+
 }
 
+
+/* =========================================================
+   RESTART
+========================================================= */
 
 function restart() {
 
-    player.x = 150;
-    player.y = 300;
-    player.vx = 0;
-    player.vy = 0;
+    player.x =
+        150;
 
-    score = 0;
-    lives = 3;
+    player.y =
+        300;
 
-    cameraX = 0;
+    player.vx =
+        0;
 
-    gameOver = false;
-    won = false;
+    player.vy =
+        0;
+
+    player.grounded =
+        false;
+
+
+    score =
+        0;
+
+    lives =
+        3;
+
+
+    cameraX =
+        0;
+
+
+    gameOver =
+        false;
+
+    won =
+        false;
+
+
+    /*
+        Coins zurücksetzen
+    */
 
     for (const c of coins) {
-        c.collected = false;
+
+        c.collected =
+            false;
+
     }
 
-    // enemies zurücksetzen
-    enemies[0].x = 550;
-    enemies[1].x = 1100;
-    enemies[2].x = 1750;
-    enemies[3].x = 2350;
-    enemies[4].x = 3100;
-    enemies[5].x = 3700;
 
-    document.getElementById("message").style.display = "none";
+    /*
+        Gegner zurücksetzen
+    */
+
+    enemies[0].x =
+        550;
+
+    enemies[1].x =
+        1100;
+
+    enemies[2].x =
+        1750;
+
+    enemies[3].x =
+        2350;
+
+    enemies[4].x =
+        3100;
+
+    enemies[5].x =
+        3700;
+
+
+    /*
+        Gegnergeschwindigkeit
+        wiederherstellen
+    */
+
+    enemies[0].vx =
+        1.5;
+
+    enemies[1].vx =
+        1.8;
+
+    enemies[2].vx =
+        1.5;
+
+    enemies[3].vx =
+        2;
+
+    enemies[4].vx =
+        1.7;
+
+    enemies[5].vx =
+        2;
+
+
+    /*
+        Tastatur zurücksetzen
+    */
+
+    keys = {};
+
+
+    document.getElementById(
+        "message"
+    ).style.display =
+        "none";
+
 
     updateUI();
+
+
+    /*
+        Canvas wieder fokussieren
+    */
+
+    canvas.focus();
+
 }
 
 
-// ==============================
-// GAME LOOP
-// ==============================
+/* =========================================================
+   GAME LOOP
+========================================================= */
 
 function loop(time) {
 
-    const dt = Math.min(time - lastTime, 40);
-    lastTime = time;
+    const dt =
+        Math.min(
+            time - lastTime,
+            40
+        );
+
+
+    lastTime =
+        time;
+
 
     update(dt);
 
-    ctx.clearRect(0, 0, W, H);
+
+    /* =====================================================
+       CLEAR
+    ===================================================== */
+
+    ctx.clearRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    /* =====================================================
+       DRAW BACKGROUND
+    ===================================================== */
 
     drawBackground();
+
+
+    /* =====================================================
+       DRAW LEVEL
+    ===================================================== */
+
     drawPlatforms();
-    drawCoins(time);
+
+
+    drawCoins(
+        time
+    );
+
+
     drawEnemies();
+
+
     drawGoal();
 
+
+    /* =====================================================
+       DRAW PLAYER
+    ===================================================== */
+
     if (
+
         player.invincible <= 0 ||
-        Math.floor(player.invincible / 5) % 2 === 0
+
+        Math.floor(
+            player.invincible / 5
+        ) % 2 === 0
+
     ) {
+
         drawPlayer();
+
     }
 
-    requestAnimationFrame(loop);
+
+    requestAnimationFrame(
+        loop
+    );
+
 }
 
+
+/* =========================================================
+   START
+========================================================= */
+
 updateUI();
-requestAnimationFrame(loop);
+
+requestAnimationFrame(
+    loop
+);
+
+
+/*
+    Canvas automatisch fokussieren
+*/
+
+setTimeout(function() {
+
+    canvas.focus();
+
+}, 500);
+
 
 </script>
 
@@ -747,4 +2083,9 @@ requestAnimationFrame(loop);
 </html>
 """
 
-components.html(game, height=800, scrolling=False)
+
+components.html(
+    game,
+    height=800,
+    scrolling=False
+)
